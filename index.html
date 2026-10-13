@@ -1,0 +1,2844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Blueprint & Striver's A2Z Sheet Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --border-hover: #cbd5e1;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --text-subtle: #94a3b8;
+      
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+
+      /* LeetCode Activity Green Levels */
+      --cell-empty: #f1f5f9;
+      --cell-empty-border: #e2e8f0;
+      --cell-level-1: #9be9a8;
+      --cell-level-2: #40c463;
+      --cell-level-3: #30a14e;
+      --cell-level-4: #216e39;
+
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      line-height: 1.5;
+      font-size: 14px;
+      padding: 24px 16px;
+    }
+
+    .container {
+      max-width: 1040px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--text);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* Buttons */
+    .btn {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: inherit;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .btn:hover {
+      background: #f1f5f9;
+      border-color: var(--border-hover);
+    }
+
+    .btn-primary {
+      background: var(--text);
+      color: #ffffff;
+      border-color: var(--text);
+    }
+
+    .btn-primary:hover {
+      background: #1e293b;
+      border-color: #1e293b;
+    }
+
+    .btn-sm {
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+
+    /* Card */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+
+    /* Streak & Stats */
+    .stats-row {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .stat-value {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    /* LEETCODE HEATMAP COMPONENT */
+    .heatmap-card-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .heatmap-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+    }
+
+    .heatmap-title {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .heatmap-legend {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .legend-box {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+    }
+
+    .heatmap-main-scroll {
+      overflow-x: auto;
+      padding-bottom: 6px;
+    }
+
+    .heatmap-board {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      user-select: none;
+      min-width: 620px;
+    }
+
+    /* Days of Week Column on Left */
+    .heatmap-days-labels {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding-top: 21px; /* Aligned with row 0 */
+      width: 28px;
+      text-align: right;
+    }
+
+    .heatmap-day-label {
+      height: 14px;
+      line-height: 14px;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .heatmap-grid-container {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .heatmap-months-labels {
+      display: flex;
+      height: 17px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .heatmap-month-header {
+      font-size: 11px;
+    }
+
+    .heatmap-week-columns {
+      display: flex;
+      gap: 3px;
+    }
+
+    .heatmap-week-col {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .heatmap-cell {
+      width: 14px;
+      height: 14px;
+      border-radius: 2px;
+      background: var(--cell-empty);
+      border: 1px solid var(--cell-empty-border);
+      cursor: pointer;
+      transition: transform 0.1s, outline 0.1s;
+    }
+
+    .heatmap-cell:hover {
+      transform: scale(1.25);
+      z-index: 10;
+      outline: 2px solid var(--accent);
+    }
+
+    .heatmap-cell.active-day {
+      outline: 2px solid #0f172a !important;
+      outline-offset: 1px;
+    }
+
+    .heatmap-cell.is-today {
+      box-shadow: 0 0 0 1.5px #f59e0b;
+    }
+
+    .heatmap-cell[data-level="0"] { background: var(--cell-empty); border-color: var(--cell-empty-border); }
+    .heatmap-cell[data-level="1"] { background: var(--cell-level-1); border-color: #86efac; }
+    .heatmap-cell[data-level="2"] { background: var(--cell-level-2); border-color: #4ade80; }
+    .heatmap-cell[data-level="3"] { background: var(--cell-level-3); border-color: #22c55e; }
+    .heatmap-cell[data-level="4"] { background: var(--cell-level-4); border-color: #16a34a; }
+
+    /* Routine Bar */
+    .routine-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+    }
+
+    .day-selector-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .day-pill {
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .routine-toggle-group {
+      display: flex;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      background: #f1f5f9;
+    }
+
+    .routine-toggle-btn {
+      background: transparent;
+      border: none;
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .routine-toggle-btn.active {
+      background: var(--card);
+      color: var(--text);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 2px;
+      overflow-x: auto;
+    }
+
+    .tab-item {
+      background: transparent;
+      border: none;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .tab-item.active {
+      color: var(--text);
+      border-bottom-color: var(--text);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Checklists */
+    .block-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .block-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .block-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .check-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      background: #f8fafc;
+      border: 1px solid transparent;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .check-item:hover {
+      border-color: var(--border);
+    }
+
+    .check-item.done {
+      background: #f0fdf4;
+    }
+
+    .check-item.done .item-text {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .checkbox {
+      width: 16px;
+      height: 16px;
+      accent-color: #16a34a;
+      cursor: pointer;
+    }
+
+    .item-text {
+      font-size: 13px;
+      font-weight: 500;
+      flex: 1;
+    }
+
+    .item-weightage {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--mono);
+    }
+
+    /* Striver Sheet Components */
+    .striver-control-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 12px;
+    }
+
+    .striver-selectors-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .striver-subtopic-sums-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 380px;
+      overflow-y: auto;
+    }
+
+    /* Full Striver Checklist Tab Styling */
+    .striver-full-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .striver-step-box {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--card);
+      overflow: hidden;
+    }
+
+    .striver-step-title {
+      background: #f1f5f9;
+      padding: 8px 12px;
+      font-weight: 700;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+
+    .striver-subtopic-section {
+      padding: 10px 14px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .striver-subtopic-section:last-child {
+      border-bottom: none;
+    }
+
+    .striver-subtopic-heading {
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+
+    .striver-sum-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .striver-sum-item:hover {
+      background: #f8fafc;
+    }
+
+    /* GitHub Section */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-group label {
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .form-input, .form-textarea, .form-select {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 13px;
+      font-family: inherit;
+      color: var(--text);
+    }
+
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--text);
+      background: var(--card);
+    }
+
+    .form-textarea {
+      font-family: var(--mono);
+      font-size: 12px;
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .problem-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 480px;
+      overflow-y: auto;
+    }
+
+    .problem-item {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .prob-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .prob-name {
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .prob-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: pre-wrap;
+      font-family: var(--mono);
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 6px 8px;
+      border-radius: 4px;
+      max-height: 80px;
+      overflow-y: auto;
+    }
+
+    .github-link {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .github-link:hover {
+      text-decoration: underline;
+    }
+
+    #statusBanner {
+      display: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+
+    /* Floating Tooltip */
+    #tooltip {
+      position: absolute;
+      background: #0f172a;
+      color: #ffffff;
+      padding: 5px 9px;
+      border-radius: 5px;
+      font-size: 11px;
+      pointer-events: none;
+      z-index: 1000;
+      display: none;
+      white-space: nowrap;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <div id="tooltip"></div>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="brand">
+        <span>DevBlueprint</span>
+        <span style="font-size:12px; color:var(--text-muted); font-weight:400;">/</span>
+        <span style="font-size:12px; color:var(--text-muted); font-weight:500;" id="repoHeaderBadge">github.com/.../my_coding</span>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-sm" id="resetStartDateBtn" title="Set start date so Today is Day 1">Sync Today = Day 1</button>
+        <button class="btn btn-sm" id="checkinTodayBtn">Check-In Today</button>
+        <button class="btn btn-sm" id="exportBtn">Export JSON</button>
+        <button class="btn btn-sm" id="importBtn">Import JSON</button>
+        <input type="file" id="importFileInput" accept=".json" style="display:none">
+      </div>
+    </header>
+
+    <!-- Streak & LeetCode Heatmap -->
+    <section class="card">
+      <div class="stats-row">
+        <div class="stat-item">
+          <span class="stat-label">Current Streak</span>
+          <span class="stat-value" id="currentStreakDisplay">0 days</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Total Showed Up</span>
+          <span class="stat-value" id="totalDaysDisplay">0 days</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Max Streak</span>
+          <span class="stat-value" id="maxStreakDisplay">0 days</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Striver Sums Solved</span>
+          <span class="stat-value" id="striverSolvedCountDisplay">0 / 447</span>
+        </div>
+        <div class="stat-item" style="margin-left:auto; text-align:right;">
+          <span class="stat-label">Active Real Date</span>
+          <span class="stat-value" style="font-size:15px;" id="activeDayText">Day 1</span>
+        </div>
+      </div>
+
+      <!-- LeetCode Heatmap Area with Days of Week on the Side -->
+      <div class="heatmap-card-section">
+        <div class="heatmap-top-bar">
+          <span class="heatmap-title">LeetCode Real-Time Activity & Commit Heatmap</span>
+          <div class="heatmap-legend">
+            <span>Less</span>
+            <div class="legend-box" style="background:var(--cell-empty); border:1px solid var(--cell-empty-border);"></div>
+            <div class="legend-box" style="background:var(--cell-level-1);"></div>
+            <div class="legend-box" style="background:var(--cell-level-2);"></div>
+            <div class="legend-box" style="background:var(--cell-level-3);"></div>
+            <div class="legend-box" style="background:var(--cell-level-4);"></div>
+            <span>More</span>
+          </div>
+        </div>
+
+        <div class="heatmap-main-scroll">
+          <div class="heatmap-board">
+            
+            <!-- Left Side Weekdays Column: Sun, Mon, Tue, Wed, Thu, Fri, Sat -->
+            <div class="heatmap-days-labels">
+              <span class="heatmap-day-label">Sun</span>
+              <span class="heatmap-day-label">Mon</span>
+              <span class="heatmap-day-label">Tue</span>
+              <span class="heatmap-day-label">Wed</span>
+              <span class="heatmap-day-label">Thu</span>
+              <span class="heatmap-day-label">Fri</span>
+              <span class="heatmap-day-label">Sat</span>
+            </div>
+
+            <!-- Heatmap Weeks Matrix -->
+            <div class="heatmap-grid-container">
+              <!-- Month Headers aligned across columns -->
+              <div class="heatmap-months-labels" id="heatmapMonthsRow"></div>
+
+              <!-- 13-14 Week Columns -->
+              <div class="heatmap-week-columns" id="heatmapGrid"></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Routine Bar: Day Switcher & Explicit Weekend / Weekday Toggle -->
+    <div class="routine-bar">
+      <div class="day-selector-group">
+        <button class="btn btn-sm" id="prevDayBtn">◀</button>
+        <select class="form-select" id="daySelect" style="padding:4px 8px; font-weight:600; font-size:13px;"></select>
+        <button class="btn btn-sm" id="nextDayBtn">▶</button>
+        <span class="day-pill" id="activeDayPillLabel">Day 1</span>
+      </div>
+
+      <div class="routine-toggle-group">
+        <button class="routine-toggle-btn active" id="weekdayToggleBtn">Weekday (Mon–Fri)</button>
+        <button class="routine-toggle-btn" id="weekendToggleBtn">Weekend (Sat & Sun)</button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs">
+      <button class="tab-item active" data-tab="blueprintTab">Daily Checklist</button>
+      <button class="tab-item" data-tab="striverFullTab">Striver A2Z Full Sheet (~447 Sums)</button>
+      <button class="tab-item" data-tab="githubTab">Commit to GitHub (my_coding)</button>
+      <button class="tab-item" data-tab="monthTab">Month-by-Month Plan</button>
+    </div>
+
+    <!-- TAB 1: DAILY BLUEPRINT (Afternoon block contains ONLY Striver's A2Z Sheet) -->
+    <section class="tab-content active" id="blueprintTab">
+      
+      <!-- WEEKDAY VIEW (Shown Monday to Friday) -->
+      <div id="weekdayBlocksContainer" style="display:flex; flex-direction:column; gap:16px;">
+        
+        <!-- Morning (1.5h): GATE Subjects by Weightage -->
+        <div class="card">
+          <div class="block-header">
+            <div>
+              <div class="block-title">Morning (1.5 Hours) — Core CS & GATE Prep</div>
+              <div class="block-meta">Fundamental theory study before keyboard (No AI code generation)</div>
+            </div>
+            <span style="font-size:12px; color:var(--text-muted);">07:00 – 08:30</span>
+          </div>
+
+          <div style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">
+            GATE CS Subjects according to weightage:
+          </div>
+
+          <div class="check-list" id="gateSubjectsList">
+            <div class="check-item" data-task-id="gate_math">
+              <input type="checkbox" class="checkbox">
+              <span class="item-text">Engineering Mathematics & Discrete Mathematics</span>
+              <span class="item-weightage">~15 Marks</span>
+            </div>
+            <div class="check-item" data-task-id="gate_algo">
+              <input type="checkbox" class="checkbox">
+              <span class="item-text">Data Structures & Algorithms</span>
+              <span class="item-weightage">~13 Marks</span>
+            </div>
+            <div class="check-item" data-task-id="gate_os">
+              <input type="checkbox" class="checkbox">
+              <span class="item-text">Operating Systems</span>
+              <span class="item-weightage">~10 Marks</span>
+            </div>
+            <div class="check-item" data-task-id="gate_dbms">
+              <input type="checkbox" class="checkbox">
+              <span class="item-text">Database Management Systems (DBMS)</span>
+              <span class="item-weightage">~8 Marks</span>
+            </div>
+            <div class="check-item" data-task-id="gate_cn">
+              <input type="checkbox" class="checkbox">
+              <span class="item-text">Computer Networks</span>
+              <span class="item-weightage">~8 Marks</span>
+            </div>
+            <div class="check-item" data-task-id="gate_toc">
+              <input type="checkbox" class="checkbox">
+              <span class="item-text">Theory of Computation (TOC)</span>
+              <span class="item-weightage">~8 Marks</span>
+            </div>
+            <div class="check-item" data-task-id="gate_coa">
+              <input type="checkbox" class="checkbox">
+              <span class="item-text">Computer Organization & Architecture (COA)</span>
+              <span class="item-weightage">~7 Marks</span>
+            </div>
+            <div class="check-item" data-task-id="gate_compiler">
+              <input type="checkbox" class="checkbox">
+              <span class="item-text">Compiler Design</span>
+              <span class="item-weightage">~5 Marks</span>
+            </div>
+            <div class="check-item" data-task-id="gate_digital">
+              <input type="checkbox" class="checkbox">
+              <span class="item-text">Digital Logic</span>
+              <span class="item-weightage">~5 Marks</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Afternoon (1.5h): DSA in C++ (STRICTLY STRIVER'S A2Z SHEET) -->
+        <div class="card">
+          <div class="block-header">
+            <div>
+              <div class="block-title">Afternoon (1.5 Hours) — DSA in C++ (Striver's A2Z Sheet)</div>
+              <div class="block-meta">Rule: Write logic on paper first • Concept lookup only if stuck</div>
+            </div>
+            <span style="font-size:12px; color:var(--text-muted);">14:00 – 15:30</span>
+          </div>
+
+          <!-- Striver's A2Z Sheet Daily Subtopic & Sums Checklist -->
+          <div class="striver-control-panel">
+            <div style="font-size:12px; font-weight:600; color:var(--text);">
+              🎯 Select Striver's A2Z Topic to work on today:
+            </div>
+            <div class="striver-selectors-row">
+              <select class="form-select" id="dailyStriverSubtopicSelect" style="flex:1;">
+                <!-- Populated via JS with all Striver subtopics -->
+              </select>
+            </div>
+
+            <!-- List of exact sums under this topic -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+              <span style="font-size:11px; font-weight:600; color:var(--text-muted);">
+                Problems in this topic (Check off as solved or click Commit to push to GitHub):
+              </span>
+              <span style="font-size:11px; font-weight:600; color:var(--accent);" id="subtopicProgressBadge">0 done</span>
+            </div>
+            <div class="striver-subtopic-sums-card" id="dailySubtopicSumsContainer">
+              <!-- Rendered via JS directly from Striver's dataset -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Evening (2h): Project Engineering -->
+        <div class="card">
+          <div class="block-header">
+            <div>
+              <div class="block-title">Evening (2 Hours) — Project Engineering</div>
+              <div class="block-meta">Active building phase • Close ChatGPT • Open official docs</div>
+            </div>
+            <span style="font-size:12px; color:var(--text-muted);">19:30 – 21:30</span>
+          </div>
+
+          <div class="check-list" id="eveningTaskList">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- WEEKEND VIEW (Shown on Saturday & Sunday ONLY) -->
+      <div id="weekendBlockContainer" style="display:none;">
+        <div class="card">
+          <div class="block-header">
+            <div>
+              <div class="block-title">Weekends (4 Hours) — Review & Integration</div>
+              <div class="block-meta">Weekly consolidation & testing (Saturday & Sunday routine)</div>
+            </div>
+            <span style="font-size:12px; color:var(--text-muted);">4.0 Hours</span>
+          </div>
+
+          <div class="check-list">
+            <div class="check-item" data-task-id="w_cpp">
+              <input type="checkbox" class="checkbox">
+              <span class="item-text">Review the week's C++ concepts</span>
+            </div>
+            <div class="check-item" data-task-id="w_wire">
+              <input type="checkbox" class="checkbox">
+              <span class="item-text">Wire your backend API to your frontend</span>
+            </div>
+            <div class="check-item" data-task-id="w_cors">
+              <input type="checkbox" class="checkbox">
+              <span class="item-text">Debug CORS errors by reading network logs</span>
+            </div>
+            <div class="check-item" data-task-id="w_mock">
+              <input type="checkbox" class="checkbox">
+              <span class="item-text">Take timed mock assessments for your core CS subjects</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- TAB 2: COMPLETE STRIVER A2Z SHEET CHECKLIST (~447 SUMS) -->
+    <section class="tab-content" id="striverFullTab">
+      <div class="card">
+        <div class="striver-full-header">
+          <div>
+            <div class="block-title">Complete Striver's A2Z DSA Sheet Checklist</div>
+            <div class="block-meta">Every topic and all listed sums (~447 problems) with persistent check-off & GitHub commit integration</div>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input type="text" class="form-input" id="striverSearchInput" placeholder="Search any sum or topic..." style="width:220px; padding:4px 8px; font-size:12px;">
+          </div>
+        </div>
+
+        <div id="striverFullChecklistContainer" style="display:flex; flex-direction:column; gap:12px;">
+          <!-- Populated dynamically with all steps, subtopics and sums -->
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: GITHUB REPO TRACKER (my_coding) -->
+    <section class="tab-content" id="githubTab">
+      <!-- GitHub Settings Card -->
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:700; font-size:14px;">GitHub Repository Settings</span>
+          <span style="font-size:12px; color:var(--text-muted);">Target: <code id="ghTargetPreview">username/my_coding</code></span>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>GitHub Username</label>
+            <input type="text" class="form-input" id="ghUser" placeholder="e.g. your-github-username">
+          </div>
+          <div class="form-group">
+            <label>Repository Name</label>
+            <input type="text" class="form-input" id="ghRepo" value="my_coding">
+          </div>
+          <div class="form-group">
+            <label>Branch</label>
+            <input type="text" class="form-input" id="ghBranch" value="main">
+          </div>
+          <div class="form-group">
+            <label>Personal Access Token (PAT)</label>
+            <input type="password" class="form-input" id="ghToken" placeholder="ghp_... (repo write permission)">
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:11px; color:var(--text-muted);">Saved in browser localStorage. Used to push files directly to <code>my_coding</code>.</span>
+          <button class="btn btn-sm" id="saveGhSettingsBtn">Save Settings</button>
+        </div>
+      </div>
+
+      <!-- Log Problem & Commit Card -->
+      <div class="card">
+        <div style="font-weight:700; font-size:14px;">Log Problem & Commit to <code>my_coding</code></div>
+        
+        <div class="form-grid">
+          <div class="form-group" style="grid-column: span 2;">
+            <label>Problem Name</label>
+            <input type="text" class="form-input" id="probTitleInput" placeholder="e.g. 2 Sum Problem">
+          </div>
+          <div class="form-group">
+            <label>File Name in Repository</label>
+            <input type="text" class="form-input" id="probFileInput" placeholder="e.g. 2_sum_problem.md or .cpp">
+          </div>
+          <div class="form-group">
+            <label>Striver A2Z Subtopic</label>
+            <select class="form-select" id="probTopicInput">
+              <!-- Populated via JS with Striver subtopics -->
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Commit Message</label>
+          <input type="text" class="form-input" id="probCommitMsgInput" placeholder="solve: 2 Sum Problem [Arrays - Medium]">
+        </div>
+
+        <div class="form-group">
+          <label>Description / Solution Notes / Paper Logic</label>
+          <textarea class="form-textarea" id="probNotesInput" placeholder="Write the problem statement, variables traced on paper, algorithmic concept, and code notes..."></textarea>
+        </div>
+
+        <div style="display:flex; gap:10px; align-items:center;">
+          <button class="btn btn-primary" id="commitGhBtn">
+            <span>Commit to my_coding</span>
+          </button>
+          <button class="btn" id="saveLocalProbBtn">Save Locally Only</button>
+        </div>
+
+        <div id="statusBanner"></div>
+      </div>
+
+      <!-- Solved Problems List -->
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:700; font-size:14px;">Logged Problems in <code>my_coding</code></span>
+          <span style="font-size:12px; color:var(--text-muted);" id="probCountLabel">0 problems</span>
+        </div>
+
+        <div class="problem-list" id="problemListContainer"></div>
+      </div>
+    </section>
+
+    <!-- TAB 4: MONTH-BY-MONTH PLAN (Strictly from image) -->
+    <section class="tab-content" id="monthTab">
+      <div class="card">
+        <div class="block-title">Month 1: Data and Logic (Days 1–30)</div>
+        <p style="font-size:13px; color:var(--text-muted);">
+          Your goal this month is to master data persistence and backend routing without relying on LLMs to write the syntax.
+        </p>
+        <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+          <div style="padding:10px; background:#f8fafc; border-radius:6px;">
+            <strong>Days 1–15:</strong> Install PostgreSQL. Write raw DDL statements to design a normalized relational schema for your Fairness Audit project. Create tables for candidates, job profiles, and audit logs. Write DML statements to insert and query synthetic data.
+          </div>
+          <div style="padding:10px; background:#f8fafc; border-radius:6px;">
+            <strong>Days 16–30:</strong> Build the FastAPI bridge. Write endpoints that connect to your PostgreSQL database. Use Pydantic V2 to enforce strict data validation. Trigger errors on purpose to learn how to read Python stack traces.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="block-title">Month 2: The Interface (Days 31–60)</div>
+        <p style="font-size:13px; color:var(--text-muted);">
+          Your goal is to make your APIs usable by building a client-facing frontend.
+        </p>
+        <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+          <div style="padding:10px; background:#f8fafc; border-radius:6px;">
+            <strong>Days 31–45:</strong> Initialize a React application. Build a dashboard layout. Manually write the fetch requests to pull your FastAPI data into the frontend.
+          </div>
+          <div style="padding:10px; background:#f8fafc; border-radius:6px;">
+            <strong>Days 46–60:</strong> Master state management. Add forms to your React app that send POST requests back to your API (e.g., submitting new parameters for a fairness audit or sending text to your MCP gateway). Fight through the inevitable CORS issues by configuring your FastAPI middleware.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="block-title">Month 3: Production & Infrastructure (Days 61–90)</div>
+        <p style="font-size:13px; color:var(--text-muted);">
+          Your goal is to take the working full-stack application off your localhost and put it on the internet.
+        </p>
+        <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+          <div style="padding:10px; background:#f8fafc; border-radius:6px;">
+            <strong>Days 61–75:</strong> Learn Docker fundamentals. Write a <code>Dockerfile</code> for your FastAPI backend and a separate one for your React frontend. Ensure they can communicate within a Docker network.
+          </div>
+          <div style="padding:10px; background:#f8fafc; border-radius:6px;">
+            <strong>Days 76–90:</strong> Push your code to GitHub. Deploy your database to a managed service like Supabase. Deploy your containerized backend and frontend to a cloud platform like Render or AWS.
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    /* =====================================================================
+       COMPLETE STRIVER'S A2Z DSA SHEET DATASET (~447 PROBLEMS)
+       ===================================================================== */
+    const STRIVER_A2Z_FULL_SHEET = [
+      {
+        step: "Step 1: Learn the Basics",
+        subtopics: [
+          {
+            title: "1.1: Things to Know in C++ / Basics",
+            sums: [
+              "User Input / Output in C++",
+              "Data Types (int, long, char, float, double)",
+              "If-Else Statements",
+              "Switch Statements",
+              "What are Arrays & Strings?",
+              "For Loops & While Loops",
+              "Functions (Pass by Reference & Value)"
+            ]
+          },
+          {
+            title: "1.2: Build-up Logical Thinking (Patterns)",
+            sums: [
+              "Pattern 1: Rectangular Star Pattern",
+              "Pattern 2: Right-Angled Triangle Pattern",
+              "Pattern 3: Right-Angled Number Pyramid",
+              "Pattern 4: Right-Angled Number Pyramid II",
+              "Pattern 5: Inverted Right Pyramid",
+              "Pattern 6: Inverted Numbered Right Pyramid",
+              "Pattern 7: Star Pyramid",
+              "Pattern 8: Inverted Star Pyramid",
+              "Pattern 9: Diamond Star Pattern",
+              "Pattern 10: Half Diamond Star Pattern",
+              "Pattern 11: Binary Number Triangle",
+              "Pattern 12: Number Crown Pattern",
+              "Pattern 13: Increasing Number Triangle",
+              "Pattern 14: Increasing Letter Triangle",
+              "Pattern 15: Reverse Letter Triangle",
+              "Pattern 16: Alpha-Ramp Pattern",
+              "Pattern 17: Alpha-Hill Pattern",
+              "Pattern 18: Alpha-Triangle Pattern",
+              "Pattern 19: Symmetric Void Pattern",
+              "Pattern 20: Symmetric Butterfly Pattern",
+              "Pattern 21: Hollow Rectangle Pattern",
+              "Pattern 22: The Number Pattern"
+            ]
+          },
+          {
+            title: "1.3: C++ STL & Collections",
+            sums: [
+              "Vector & Pair Containers",
+              "List & Deque Containers",
+              "Stack Container in STL",
+              "Queue & Priority Queue (Min/Max Heap)",
+              "Set, Multiset & Unordered Set",
+              "Map, Multimap & Unordered Map",
+              "Important STL Algorithms (sort, max_element, reverse, permutations)"
+            ]
+          },
+          {
+            title: "1.4: Basic Maths for DSA",
+            sums: [
+              "Count Digits in a Number",
+              "Reverse a Number",
+              "Check if Number is Palindrome",
+              "Find GCD / HCF (Euclidean Algorithm)",
+              "Check if Number is Armstrong Number",
+              "Print all Divisors of a Number",
+              "Check for Prime Number (O(sqrt(N)))"
+            ]
+          },
+          {
+            title: "1.5: Basic Recursion",
+            sums: [
+              "Understand Recursion by printing 1 to N",
+              "Print N to 1 using Recursion",
+              "Sum of first N Numbers",
+              "Factorial of N Numbers",
+              "Reverse an Array using Recursion",
+              "Check if String is Palindrome",
+              "Fibonacci Number (Multiple Recursion Calls)"
+            ]
+          },
+          {
+            title: "1.6: Basic Hashing",
+            sums: [
+              "Counting frequencies of array elements",
+              "Find the highest/lowest frequency element",
+              "Hashing Theory (Division, Folding, Mid-square methods, Collisions)"
+            ]
+          }
+        ]
+      },
+      {
+        step: "Step 2: Learn Important Sorting Techniques",
+        subtopics: [
+          {
+            title: "2.1: Sorting-I (Elementary Sorts)",
+            sums: [
+              "Selection Sort Algorithm",
+              "Bubble Sort Algorithm",
+              "Insertion Sort Algorithm"
+            ]
+          },
+          {
+            title: "2.2: Sorting-II (Advanced Sorts)",
+            sums: [
+              "Merge Sort Algorithm",
+              "Recursive Bubble Sort",
+              "Recursive Insertion Sort",
+              "Quick Sort Algorithm"
+            ]
+          }
+        ]
+      },
+      {
+        step: "Step 3: Solve Problems on Arrays",
+        subtopics: [
+          {
+            title: "3.1: Arrays - Easy",
+            sums: [
+              "Largest Element in an Array",
+              "Second Largest Element in Array without sorting",
+              "Check if Array is Sorted and Rotated",
+              "Remove Duplicates from Sorted Array",
+              "Left Rotate Array by One Place",
+              "Left Rotate Array by D Places",
+              "Move Zeroes to End of Array",
+              "Linear Search",
+              "Find the Union of Two Sorted Arrays",
+              "Find the Missing Number in Array",
+              "Maximum Consecutive Ones",
+              "Find the Number that appears once, others twice",
+              "Longest Subarray with Given Sum K (Positives)",
+              "Longest Subarray with Given Sum K (Positives + Negatives)"
+            ]
+          },
+          {
+            title: "3.2: Arrays - Medium",
+            sums: [
+              "2 Sum Problem",
+              "Sort an Array of 0s, 1s and 2s (Dutch National Flag)",
+              "Majority Element (> n/2 times - Moore's Voting)",
+              "Maximum Subarray Sum (Kadane's Algorithm)",
+              "Print Subarray with Maximum Sum",
+              "Best Time to Buy and Sell Stock",
+              "Rearrange Array Elements by Sign",
+              "Next Permutation",
+              "Leaders in an Array Problem",
+              "Longest Consecutive Sequence in an Array",
+              "Set Matrix Zeroes",
+              "Rotate Matrix by 90 Degrees Clockwise",
+              "Print Matrix in Spiral Manner",
+              "Count Subarrays with Given Sum Equals K"
+            ]
+          },
+          {
+            title: "3.3: Arrays - Hard",
+            sums: [
+              "Pascal's Triangle (Print element, row, or full triangle)",
+              "Majority Element II (> n/3 times)",
+              "3 Sum Problem",
+              "4 Sum Problem",
+              "Largest Subarray with 0 Sum",
+              "Count Number of Subarrays with Given XOR K",
+              "Merge Overlapping Subintervals",
+              "Merge Two Sorted Arrays Without Extra Space",
+              "Find the Repeating and Missing Numbers",
+              "Count Inversions in an Array",
+              "Reverse Pairs Problem",
+              "Maximum Product Subarray"
+            ]
+          }
+        ]
+      },
+      {
+        step: "Step 4: Binary Search",
+        subtopics: [
+          {
+            title: "4.1: BS on 1D Arrays",
+            sums: [
+              "Binary Search to find X in sorted array",
+              "Implement Lower Bound",
+              "Implement Upper Bound",
+              "Search Insert Position",
+              "Floor and Ceil in Sorted Array",
+              "Find First and Last Occurrence of Element",
+              "Count Occurrences of a Number in Sorted Array",
+              "Search in Rotated Sorted Array I (Unique elements)",
+              "Search in Rotated Sorted Array II (Duplicate elements)",
+              "Find Minimum in Rotated Sorted Array",
+              "Find how many times Array has been Rotated",
+              "Single Element in a Sorted Array",
+              "Find Peak Element"
+            ]
+          },
+          {
+            title: "4.2: BS on Answers",
+            sums: [
+              "Find Square Root of an Integer (Binary Search)",
+              "Find Nth Root of Integer",
+              "Koko Eating Bananas",
+              "Minimum Days to Make M Bouquets",
+              "Find the Smallest Divisor given a Threshold",
+              "Capacity to Ship Packages within D Days",
+              "Kth Missing Positive Number",
+              "Aggressive Cows Problem",
+              "Book Allocation Problem",
+              "Split Array Largest Sum",
+              "Painter's Partition Problem",
+              "Minimize Max Distance to Gas Station",
+              "Median of Two Sorted Arrays of Different Sizes",
+              "Kth Element of Two Sorted Arrays"
+            ]
+          },
+          {
+            title: "4.3: BS on 2D Arrays",
+            sums: [
+              "Find the Row with Maximum Number of 1s",
+              "Search in a 2D Matrix (Strictly Sorted)",
+              "Search in Row-wise and Column-wise Sorted Matrix",
+              "Find Peak Element in a 2D Matrix",
+              "Matrix Median"
+            ]
+          }
+        ]
+      },
+      {
+        step: "Step 5: Strings (Basic & Medium)",
+        subtopics: [
+          {
+            title: "5.1: Basic Strings",
+            sums: [
+              "Remove Outermost Parentheses",
+              "Reverse Words in a String",
+              "Largest Odd Number in String",
+              "Longest Common Prefix",
+              "Isomorphic Strings",
+              "Check if One String is a Rotation of Another",
+              "Check for Valid Anagram"
+            ]
+          },
+          {
+            title: "5.2: Medium Strings",
+            sums: [
+              "Sort Characters by Frequency",
+              "Maximum Nesting Depth of Parentheses",
+              "Roman Number to Integer and Vice Versa",
+              "Implement Atoi / String to Integer",
+              "Count Number of Substrings with at most K distinct characters",
+              "Longest Palindromic Substring",
+              "Sum of Beauty of All Substrings",
+              "Reverse Every Word in a String"
+            ]
+          }
+        ]
+      },
+      {
+        step: "Step 6: Learn LinkedList",
+        subtopics: [
+          {
+            title: "6.1: 1D LinkedList",
+            sums: [
+              "Introduction to Linked List & Node creation",
+              "Inserting a Node in LinkedList",
+              "Deleting a Node in LinkedList",
+              "Find the Length of Linked List",
+              "Search an Element in Linked List"
+            ]
+          },
+          {
+            title: "6.2: Doubly LinkedList",
+            sums: [
+              "Introduction to Doubly Linked List",
+              "Insert a Node in DLL",
+              "Delete a Node in DLL",
+              "Reverse a Doubly Linked List"
+            ]
+          },
+          {
+            title: "6.3: Medium Problems on LL",
+            sums: [
+              "Middle of a Linked List (Tortoise & Hare)",
+              "Reverse a Linked List (Iterative & Recursive)",
+              "Detect a Loop in Linked List",
+              "Find Starting Point of Loop in LL",
+              "Length of Loop in Linked List",
+              "Check if a LinkedList is Palindrome",
+              "Segregate Odd and Even Nodes in LL",
+              "Remove Nth Node from End of List",
+              "Delete the Middle Node of LinkedList",
+              "Sort a Linked List (Merge Sort on LL)",
+              "Sort LL of 0s, 1s and 2s",
+              "Find Intersection Point of Two Linked Lists",
+              "Add 1 to a Number represented as LL",
+              "Add Two Numbers represented as Linked Lists"
+            ]
+          },
+          {
+            title: "6.4: Doubly LL Medium & Hard",
+            sums: [
+              "Delete all Occurrences of a Key in DLL",
+              "Find Pairs with Given Sum in DLL",
+              "Remove Duplicates from Sorted DLL"
+            ]
+          },
+          {
+            title: "6.5: Hard Problems on LL",
+            sums: [
+              "Reverse Nodes in K-Group Size",
+              "Rotate a Linked List by K places",
+              "Flattening of a Linked List",
+              "Clone a Linked List with Random and Next Pointer"
+            ]
+          }
+        ]
+      },
+      {
+        step: "Step 7: Recursion & Backtracking",
+        subtopics: [
+          {
+            title: "7.1: Get a Strong Hold",
+            sums: [
+              "Recursive Implementation of Pow(x, n)",
+              "Count Good Numbers",
+              "Sort a Stack using Recursion",
+              "Reverse a Stack using Recursion"
+            ]
+          },
+          {
+            title: "7.2: Subsequences Pattern",
+            sums: [
+              "Generate all Binary Strings without consecutive 1s",
+              "Generate Parentheses",
+              "Print all Subsequences / Power Set",
+              "Check if Subsequence with Sum K exists",
+              "Count all Subsequences with Sum K",
+              "Combination Sum I",
+              "Combination Sum II",
+              "Subset Sum I (Sums of all subsets)",
+              "Subset Sum II (Unique subsets)",
+              "Letter Combinations of a Phone Number"
+            ]
+          },
+          {
+            title: "7.3: Hard Backtracking Problems",
+            sums: [
+              "Palindrome Partitioning",
+              "Word Search in Matrix",
+              "N-Queens Problem",
+              "Rat in a Maze Problem",
+              "Word Break Problem",
+              "M-Coloring Problem",
+              "Sudoku Solver",
+              "Expression Add Operators"
+            ]
+          }
+        ]
+      },
+      {
+        step: "Step 8: Bit Manipulation",
+        subtopics: [
+          {
+            title: "8.1: Learn Bit Manipulation",
+            sums: [
+              "Introduction to Bit Operations (AND, OR, XOR, NOT, Shifts)",
+              "Check if i-th bit is set or not",
+              "Set / Clear / Toggle the i-th bit",
+              "Remove the lowest set bit (n & (n-1))",
+              "Check if a Number is Power of 2",
+              "Count number of Set Bits",
+              "Set the rightmost unset bit",
+              "Swap two numbers without third variable",
+              "Divide Two Integers without *, / and %"
+            ]
+          },
+          {
+            title: "8.2: Interview Problems on Bits",
+            sums: [
+              "Count Bits to Flip to Convert A to B",
+              "Find the Single Number that appears once",
+              "Power Set using Bitmasking",
+              "Find Two Numbers Appearing Odd Number of Times",
+              "Single Number II (every element appears 3 times except one)"
+            ]
+          }
+        ]
+      },
+      {
+        step: "Step 9: Stack and Queues",
+        subtopics: [
+          {
+            title: "9.1: Learning Stack & Queue",
+            sums: [
+              "Implement Stack using Arrays",
+              "Implement Queue using Arrays",
+              "Implement Stack using Queue",
+              "Implement Queue using Stack",
+              "Implement Stack & Queue using Linked List",
+              "Check for Balanced Parentheses",
+              "Implement Min Stack (O(1) auxiliary space)"
+            ]
+          },
+          {
+            title: "9.2: Prefix, Infix, Postfix Expressions",
+            sums: [
+              "Infix to Postfix Conversion",
+              "Infix to Prefix Conversion",
+              "Postfix to Infix Conversion",
+              "Prefix to Infix Conversion",
+              "Postfix to Prefix Conversion",
+              "Prefix to Postfix Conversion"
+            ]
+          },
+          {
+            title: "9.3: Monotonic Stack & Queue",
+            sums: [
+              "Next Greater Element I",
+              "Next Greater Element II (Circular array)",
+              "Next Smaller Element",
+              "Number of NGEs to the right",
+              "Trapping Rainwater Problem",
+              "Sum of Subarray Minimums",
+              "Asteroid Collision",
+              "Sum of Subarray Ranges",
+              "Remove K Digits",
+              "Largest Rectangle in Histogram",
+              "Maximal Rectangle in 2D Binary Matrix"
+            ]
+          },
+          {
+            title: "9.4: Implementation Problems",
+            sums: [
+              "Sliding Window Maximum",
+              "Online Stock Span",
+              "Rotten Oranges Problem",
+              "LRU Cache (Least Recently Used)",
+              "LFU Cache (Least Frequently Used)"
+            ]
+          }
+        ]
+      },
+      {
+        step: "Step 10: Sliding Window & Two Pointer Combined",
+        subtopics: [
+          {
+            title: "10.1: Medium Problems",
+            sums: [
+              "Longest Substring Without Repeating Characters",
+              "Max Consecutive Ones III",
+              "Fruit Into Baskets",
+              "Longest Repeating Character Replacement",
+              "Binary Subarrays with Sum",
+              "Count Number of Nice Subarrays",
+              "Number of Substrings Containing All Three Characters",
+              "Maximum Points You Can Obtain from Cards"
+            ]
+          },
+          {
+            title: "10.2: Hard Problems",
+            sums: [
+              "Longest Substring with At Most K Distinct Characters",
+              "Subarrays with K Different Integers",
+              "Minimum Window Substring",
+              "Minimum Window Subsequence"
+            ]
+          }
+        ]
+      },
+      {
+        step: "Step 11: Heaps / Priority Queue",
+        subtopics: [
+          {
+            title: "11.1: Learning Heaps",
+            sums: [
+              "Introduction to Priority Queue & Binary Heap",
+              "Min Heap and Max Heap Implementation",
+              "Check if an Array represents a Binary Heap",
+              "Convert Min Heap to Max Heap"
+            ]
+          },
+          {
+            title: "11.2: Medium Problems",
+            sums: [
+              "Kth Largest Element in an Array",
+              "Kth Smallest Element in an Array",
+              "Sort a Nearly Sorted Array (K-Sorted)",
+              "Merge K Sorted Arrays",
+              "Merge M Sorted Lists",
+              "Replace Elements by its Rank in the Array",
+              "Task Scheduler Problem",
+              "Hands of Straights"
+            ]
+          },
+          {
+            title: "11.3: Hard Problems",
+            sums: [
+              "Design Twitter",
+              "Connect N Ropes with Minimum Cost",
+              "Kth Largest Element in a Stream",
+              "Maximum Sum Combination",
+              "Find Median from Data Stream",
+              "Top K Frequent Elements"
+            ]
+          }
+        ]
+      },
+      {
+        step: "Step 12: Greedy Algorithms",
+        subtopics: [
+          {
+            title: "12.1: Easy Greedy",
+            sums: [
+              "Assign Cookies",
+              "Fractional Knapsack Problem",
+              "Find Minimum Number of Coins",
+              "Lemonade Change"
+            ]
+          },
+          {
+            title: "12.2: Medium/Hard Greedy",
+            sums: [
+              "N Meetings in One Room",
+              "Jump Game I",
+              "Jump Game II (Minimum jumps to reach end)",
+              "Minimum Platforms for Railway Station",
+              "Job Sequencing Problem",
+              "Candy Problem",
+              "Shortest Job First (SJF) Scheduling",
+              "Insert Interval",
+              "Non-overlapping Intervals"
+            ]
+          }
+        ]
+      },
+      {
+        step: "Step 13: Binary Trees",
+        subtopics: [
+          {
+            title: "13.1: Tree Traversals",
+            sums: [
+              "Introduction to Trees & Node representation",
+              "Inorder Traversal (Recursive)",
+              "Preorder Traversal (Recursive)",
+              "Postorder Traversal (Recursive)",
+              "Level Order Traversal / BFS",
+              "Iterative Preorder Traversal",
+              "Iterative Inorder Traversal",
+              "Iterative Postorder Traversal using 2 Stacks",
+              "Iterative Postorder Traversal using 1 Stack",
+              "Preorder, Inorder, Postorder in a Single Traversal"
+            ]
+          },
+          {
+            title: "13.2: Medium Tree Problems",
+            sums: [
+              "Maximum Depth / Height of Binary Tree",
+              "Check for Balanced Binary Tree",
+              "Diameter of Binary Tree",
+              "Maximum Path Sum in Binary Tree",
+              "Check if Two Trees are Identical",
+              "Zig-Zag or Spiral Traversal of Binary Tree",
+              "Boundary Traversal of Binary Tree",
+              "Vertical Order Traversal of Binary Tree",
+              "Top View of Binary Tree",
+              "Bottom View of Binary Tree",
+              "Right / Left View of Binary Tree",
+              "Symmetric Binary Tree Check"
+            ]
+          },
+          {
+            title: "13.3: Hard Tree Problems",
+            sums: [
+              "Root to Node Path in Binary Tree",
+              "Lowest Common Ancestor (LCA) in Binary Tree",
+              "Maximum Width of Binary Tree",
+              "Children Sum Property in Binary Tree",
+              "Print all Nodes at Distance K in Binary Tree",
+              "Minimum Time Taken to Burn the Binary Tree from a Node",
+              "Count Total Nodes in a Complete Binary Tree",
+              "Construct Binary Tree from Preorder and Inorder Traversal",
+              "Construct Binary Tree from Postorder and Inorder Traversal",
+              "Serialize and Deserialize Binary Tree",
+              "Morris Preorder & Inorder Traversal (O(1) Space)",
+              "Flatten Binary Tree to Linked List"
+            ]
+          }
+        ]
+      },
+      {
+        step: "Step 14: Binary Search Trees",
+        subtopics: [
+          {
+            title: "14.1: BST Concepts",
+            sums: [
+              "Search in a Binary Search Tree",
+              "Find Min / Max in BST",
+              "Ceil in a Binary Search Tree",
+              "Floor in a Binary Search Tree",
+              "Insert a given Node in BST",
+              "Delete a Node in BST",
+              "Find K-th Smallest / Largest Element in BST",
+              "Check if a Tree is a Valid BST"
+            ]
+          },
+          {
+            title: "14.2: Practice BST Problems",
+            sums: [
+              "Lowest Common Ancestor in BST",
+              "Construct BST from Preorder Traversal",
+              "Inorder Successor and Predecessor in BST",
+              "Binary Search Tree Iterator",
+              "Two Sum in BST (Check if pair exists)",
+              "Recover BST (Correct swapped nodes)",
+              "Largest BST in Binary Tree"
+            ]
+          }
+        ]
+      },
+      {
+        step: "Step 15: Graphs",
+        subtopics: [
+          {
+            title: "15.1: Learning Graph Representations",
+            sums: [
+              "Introduction to Graph (Directed vs Undirected, Weighted)",
+              "Graph Representation in C++ (Adjacency Matrix & List)",
+              "Connected Components in Graph",
+              "Breadth First Search (BFS) Traversal",
+              "Depth First Search (DFS) Traversal"
+            ]
+          },
+          {
+            title: "15.2: Problems on BFS & DFS",
+            sums: [
+              "Number of Provinces",
+              "Connected Components in Matrix (Number of Islands)",
+              "Flood Fill Algorithm",
+              "Rotting Oranges",
+              "0/1 Matrix (Distance of nearest cell having 1)",
+              "Surrounded Regions (Replace O's with X's)",
+              "Number of Enclaves",
+              "Word Ladder I (Shortest transformation sequence)",
+              "Word Ladder II (All shortest sequences)",
+              "Number of Distinct Islands",
+              "Is Graph Bipartite? (BFS & DFS)",
+              "Detect Cycle in Undirected Graph (BFS & DFS)",
+              "Detect Cycle in Directed Graph (DFS)"
+            ]
+          },
+          {
+            title: "15.3: Topo Sort & DAGs",
+            sums: [
+              "Topological Sort Algorithm (DFS)",
+              "Kahn's Algorithm (BFS Topological Sort)",
+              "Detect Cycle in Directed Graph using Kahn's Algorithm",
+              "Course Schedule I",
+              "Course Schedule II",
+              "Find Eventual Safe States",
+              "Alien Dictionary"
+            ]
+          },
+          {
+            title: "15.4: Shortest Path Algorithms",
+            sums: [
+              "Shortest Path in Undirected Graph with Unit Weights",
+              "Shortest Path in Directed Acyclic Graph (DAG)",
+              "Dijkstra's Algorithm (Priority Queue & Set implementations)",
+              "Shortest Path in Binary Maze",
+              "Path With Minimum Effort",
+              "Cheapest Flights Within K Stops",
+              "Network Delay Time",
+              "Number of Ways to Arrive at Destination",
+              "Minimum Multiplications to Reach End",
+              "Bellman-Ford Algorithm (Detect Negative Cycles)",
+              "Floyd-Warshall Algorithm (All Pairs Shortest Path)",
+              "Find City with Smallest Number of Neighbors at Threshold Distance"
+            ]
+          },
+          {
+            title: "15.5: Minimum Spanning Tree & Disjoint Set",
+            sums: [
+              "Prim's Algorithm for MST",
+              "Disjoint Set Union (DSU by Rank & Size, Path Compression)",
+              "Kruskal's Algorithm for MST",
+              "Number of Operations to Make Network Connected",
+              "Most Stones Removed with Same Row or Column",
+              "Accounts Merge",
+              "Number of Islands II (Online Queries)",
+              "Making a Large Island",
+              "Swim in Rising Water"
+            ]
+          },
+          {
+            title: "15.6: Other Graph Algorithms",
+            sums: [
+              "Bridges in Graph (Tarjan's Algorithm)",
+              "Articulation Points in Graph",
+              "Strongly Connected Components (Kosaraju's Algorithm)"
+            ]
+          }
+        ]
+      },
+      {
+        step: "Step 16: Dynamic Programming",
+        subtopics: [
+          {
+            title: "16.1: 1D Dynamic Programming",
+            sums: [
+              "Introduction to DP (Memoization & Tabulation, Space Optimization)",
+              "Climbing Stairs",
+              "Frog Jump (Geek Jump)",
+              "Frog Jump with K Distances",
+              "Maximum Sum of Non-Adjacent Elements (House Robber I)",
+              "House Robber II (Circular Street)"
+            ]
+          },
+          {
+            title: "16.2: 2D/3D DP & Grid Problems",
+            sums: [
+              "Ninja's Training (2D DP)",
+              "Grid Unique Paths",
+              "Grid Unique Paths II (With Obstacles)",
+              "Minimum Path Sum in Grid",
+              "Triangle (Minimum Path Sum in Triangular Grid)",
+              "Minimum / Maximum Falling Path Sum",
+              "Chocolate Pickup / Cherry Pickup II (3D DP)"
+            ]
+          },
+          {
+            title: "16.3: DP on Subsequences",
+            sums: [
+              "Subset Sum Equals to Target",
+              "Partition Equal Subset Sum",
+              "Partition a Set into Two Subsets with Minimum Absolute Sum Difference",
+              "Count Subsets with Sum K",
+              "Count Partitions with Given Difference",
+              "0/1 Knapsack Problem",
+              "Minimum Coins to Make Change",
+              "Target Sum",
+              "Unbounded Knapsack",
+              "Rod Cutting Problem"
+            ]
+          },
+          {
+            title: "16.4: DP on Strings",
+            sums: [
+              "Longest Common Subsequence (LCS)",
+              "Print Longest Common Subsequence",
+              "Longest Common Substring",
+              "Longest Palindromic Subsequence",
+              "Minimum Insertions to Make String Palindrome",
+              "Minimum Insertions/Deletions to Convert String A to B",
+              "Shortest Common Supersequence",
+              "Distinct Subsequences",
+              "Edit Distance",
+              "Wildcard Matching"
+            ]
+          },
+          {
+            title: "16.5: DP on Stocks",
+            sums: [
+              "Best Time to Buy and Sell Stock I",
+              "Stock Buy and Sell II (Infinite transactions)",
+              "Stock Buy and Sell III (At most 2 transactions)",
+              "Stock Buy and Sell IV (At most K transactions)",
+              "Buy and Sell Stocks with Cooldown",
+              "Buy and Sell Stocks with Transaction Fee"
+            ]
+          },
+          {
+            title: "16.6: DP on Longest Increasing Subsequence (LIS)",
+            sums: [
+              "Longest Increasing Subsequence (O(N^2) and O(N log N) BS)",
+              "Printing Longest Increasing Subsequence",
+              "Largest Divisible Subset",
+              "Longest String Chain",
+              "Longest Bitonic Subsequence",
+              "Number of Longest Increasing Subsequences"
+            ]
+          },
+          {
+            title: "16.7: Matrix Chain Multiplication (MCM) & Partition DP",
+            sums: [
+              "Matrix Chain Multiplication (MCM)",
+              "Minimum Cost to Cut a Stick",
+              "Burst Balloons",
+              "Evaluate Boolean Expression to True",
+              "Palindrome Partitioning II",
+              "Partition Array for Maximum Sum"
+            ]
+          },
+          {
+            title: "16.8: DP on Squares",
+            sums: [
+              "Count Square Submatrices with All Ones",
+              "Maximal Rectangle in Binary Matrix"
+            ]
+          }
+        ]
+      },
+      {
+        step: "Step 17: Tries",
+        subtopics: [
+          {
+            title: "17.1: Trie Theory & Applications",
+            sums: [
+              "Implement Trie I (Insert, Search, StartsWith)",
+              "Implement Trie II (countWordsEqualTo, countWordsStartingWith)",
+              "Longest Word with All Prefixes",
+              "Number of Distinct Substrings in a String using Trie",
+              "Bit Pre-requisites for TRIE",
+              "Maximum XOR of Two Numbers in an Array",
+              "Maximum XOR With an Element From Array"
+            ]
+          }
+        ]
+      },
+      {
+        step: "Step 18: Advanced Strings",
+        subtopics: [
+          {
+            title: "18.1: Advanced String Matching",
+            sums: [
+              "Knuth-Morris-Pratt (KMP) Algorithm",
+              "Z-Algorithm for Pattern Searching",
+              "Shortest Palindrome",
+              "Longest Happy Prefix"
+            ]
+          }
+        ]
+      }
+    ];
+
+    /* =====================================================================
+       STATE MANAGEMENT & REAL-TIME DATES (TODAY = DAY 1)
+       ===================================================================== */
+    const STORAGE_KEY = 'DEV_BLUEPRINT_MY_CODING_V7';
+
+    let state = {
+      startDateStr: null,
+      selectedDay: 1,
+      isWeekendView: false,
+      dayDsaSubtopic: {}, // { [dayNum]: subtopicTitle }
+      striverCompletedSums: {}, // { [sumTitle]: boolean }
+      striverSolvedDays: {}, // { [sumTitle]: dayNum } - tracks which day a sum was completed
+      tasks: {}, // { [dayNum]: { [taskId]: boolean } }
+      problems: [], // [ { id, day, dateStr, title, fileName, topic, commitMsg, notes, githubUrl } ]
+      github: {
+        username: '',
+        repo: 'my_coding',
+        branch: 'main',
+        token: ''
+      }
+    };
+
+    function getTodayDateStr() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function parseDate(dateStr) {
+      const parts = dateStr.split('-');
+      return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+    }
+
+    function formatDateFormatted(d) {
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      return `${days[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+    }
+
+    function getDateForDay(dayNum) {
+      const start = parseDate(state.startDateStr);
+      const d = new Date(start);
+      d.setDate(start.getDate() + (dayNum - 1));
+      return d;
+    }
+
+    function isDayWeekend(dayNum) {
+      const d = getDateForDay(dayNum);
+      const dayOfWeek = d.getDay();
+      return dayOfWeek === 0 || dayOfWeek === 6;
+    }
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          state = { ...state, ...parsed };
+        }
+      } catch (e) {
+        console.error(e);
+      }
+
+      if (!state.startDateStr) {
+        state.startDateStr = getTodayDateStr();
+      }
+
+      const todayStr = getTodayDateStr();
+      const start = parseDate(state.startDateStr);
+      const today = parseDate(todayStr);
+      const diffTime = today.getTime() - start.getTime();
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+      if (diffDays >= 1 && diffDays <= 90) {
+        state.selectedDay = diffDays;
+      }
+
+      state.isWeekendView = isDayWeekend(state.selectedDay);
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    /* =====================================================================
+       HEATMAP ENGINE
+       ===================================================================== */
+    function calculateStats() {
+      const activityMap = {};
+
+      for (let d = 1; d <= 90; d++) {
+        const dayTasks = state.tasks[d] || {};
+        const count = Object.values(dayTasks).filter(Boolean).length;
+        if (count > 0) activityMap[d] = (activityMap[d] || 0) + count;
+      }
+
+      // Striver sums completed on specific days
+      Object.entries(state.striverSolvedDays || {}).forEach(([sumTitle, day]) => {
+        if (state.striverCompletedSums[sumTitle]) {
+          activityMap[day] = (activityMap[day] || 0) + 1;
+        }
+      });
+
+      // Problems logged
+      state.problems.forEach(p => {
+        const d = p.day || state.selectedDay;
+        activityMap[d] = (activityMap[d] || 0) + 1;
+      });
+
+      const totalDays = Object.keys(activityMap).length;
+
+      let maxStreak = 0;
+      let temp = 0;
+      for (let d = 1; d <= 90; d++) {
+        if (activityMap[d] > 0) {
+          temp++;
+          if (temp > maxStreak) maxStreak = temp;
+        } else {
+          temp = 0;
+        }
+      }
+
+      let currentStreak = 0;
+      for (let d = state.selectedDay; d >= 1; d--) {
+        if (activityMap[d] > 0) currentStreak++;
+        else break;
+      }
+
+      const striverSolvedCount = Object.values(state.striverCompletedSums).filter(Boolean).length;
+
+      return {
+        totalDays,
+        currentStreak,
+        maxStreak,
+        striverSolvedCount,
+        activityMap
+      };
+    }
+
+    function renderHeatmap() {
+      const { activityMap } = calculateStats();
+      const grid = document.getElementById('heatmapGrid');
+      const monthsRow = document.getElementById('heatmapMonthsRow');
+      grid.innerHTML = '';
+      monthsRow.innerHTML = '';
+
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const start = parseDate(state.startDateStr);
+
+      const gridStart = new Date(start);
+      gridStart.setDate(start.getDate() - start.getDay());
+
+      const totalWeeks = 14;
+      let lastMonth = -1;
+
+      for (let w = 0; w < totalWeeks; w++) {
+        const weekSunday = new Date(gridStart);
+        weekSunday.setDate(gridStart.getDate() + w * 7);
+
+        const m = weekSunday.getMonth();
+        const monthSpan = document.createElement('span');
+        monthSpan.style.width = '17px';
+        monthSpan.style.marginRight = '0px';
+
+        if (m !== lastMonth) {
+          monthSpan.innerText = months[m];
+          monthSpan.className = 'heatmap-month-header';
+          lastMonth = m;
+        }
+        monthsRow.appendChild(monthSpan);
+
+        const col = document.createElement('div');
+        col.className = 'heatmap-week-col';
+
+        for (let r = 0; r < 7; r++) {
+          const cellDate = new Date(gridStart);
+          cellDate.setDate(gridStart.getDate() + (w * 7 + r));
+
+          const diffTime = cellDate.getTime() - start.getTime();
+          const dayNum = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+          const cell = document.createElement('div');
+          cell.className = 'heatmap-cell';
+
+          if (dayNum >= 1 && dayNum <= 90) {
+            const count = activityMap[dayNum] || 0;
+            let level = 0;
+            if (count === 0) level = 0;
+            else if (count <= 2) level = 1;
+            else if (count <= 4) level = 2;
+            else if (count <= 6) level = 3;
+            else level = 4;
+
+            cell.setAttribute('data-level', level);
+
+            if (dayNum === state.selectedDay) {
+              cell.classList.add('active-day');
+            }
+
+            const todayStr = getTodayDateStr();
+            const cellDateStr = `${cellDate.getFullYear()}-${String(cellDate.getMonth() + 1).padStart(2, '0')}-${String(cellDate.getDate()).padStart(2, '0')}`;
+            if (cellDateStr === todayStr) {
+              cell.classList.add('is-today');
+            }
+
+            const formattedDate = formatDateFormatted(cellDate);
+            const isWknd = (r === 0 || r === 6);
+
+            cell.onmouseenter = (e) => {
+              showTooltip(e, `Day ${dayNum} • ${formattedDate} (${isWknd ? 'Weekend' : 'Weekday'}): ${count} activity / commits`);
+            };
+            cell.onmouseleave = hideTooltip;
+            cell.onclick = () => selectDay(dayNum);
+          } else {
+            cell.style.opacity = '0.15';
+            cell.style.cursor = 'default';
+          }
+
+          col.appendChild(cell);
+        }
+        grid.appendChild(col);
+      }
+    }
+
+    function showTooltip(e, text) {
+      const t = document.getElementById('tooltip');
+      t.innerText = text;
+      t.style.display = 'block';
+      const r = e.target.getBoundingClientRect();
+      t.style.left = `${r.left + window.scrollX - 10}px`;
+      t.style.top = `${r.top + window.scrollY - 30}px`;
+    }
+
+    function hideTooltip() {
+      document.getElementById('tooltip').style.display = 'none';
+    }
+
+    /* =====================================================================
+       STRIVER'S A2Z DROPDOWNS & CHECKLIST INITIALIZATION
+       ===================================================================== */
+    function populateStriverComponents() {
+      const subtopicSelect = document.getElementById('dailyStriverSubtopicSelect');
+      const probTopicSelect = document.getElementById('probTopicInput');
+      subtopicSelect.innerHTML = '';
+      probTopicSelect.innerHTML = '';
+
+      STRIVER_A2Z_FULL_SHEET.forEach(stepObj => {
+        const optgroup1 = document.createElement('optgroup');
+        optgroup1.label = stepObj.step;
+
+        const optgroup2 = document.createElement('optgroup');
+        optgroup2.label = stepObj.step;
+
+        stepObj.subtopics.forEach(sub => {
+          const opt1 = document.createElement('option');
+          opt1.value = sub.title;
+          opt1.innerText = `${sub.title} (${sub.sums.length} sums)`;
+          optgroup1.appendChild(opt1);
+
+          const opt2 = document.createElement('option');
+          opt2.value = sub.title;
+          opt2.innerText = sub.title;
+          optgroup2.appendChild(opt2);
+        });
+
+        subtopicSelect.appendChild(optgroup1);
+        probTopicSelect.appendChild(optgroup2);
+      });
+
+      // Change subtopic in Afternoon block
+      subtopicSelect.onchange = () => {
+        state.dayDsaSubtopic[state.selectedDay] = subtopicSelect.value;
+        saveState();
+        renderDailySubtopicSums(subtopicSelect.value);
+      };
+
+      // Populate Full Striver Checklist Tab
+      renderFullStriverSheet();
+    }
+
+    function renderDailySubtopicSums(subtopicTitle) {
+      const container = document.getElementById('dailySubtopicSumsContainer');
+      const badge = document.getElementById('subtopicProgressBadge');
+      container.innerHTML = '';
+
+      let foundSub = null;
+      for (const stepObj of STRIVER_A2Z_FULL_SHEET) {
+        for (const sub of stepObj.subtopics) {
+          if (sub.title === subtopicTitle) {
+            foundSub = sub;
+            break;
+          }
+        }
+        if (foundSub) break;
+      }
+
+      if (!foundSub) return;
+
+      let doneCount = 0;
+
+      foundSub.sums.forEach(sumTitle => {
+        const isDone = !!state.striverCompletedSums[sumTitle];
+        if (isDone) doneCount++;
+
+        const item = document.createElement('div');
+        item.style.display = 'flex';
+        item.style.alignItems = 'center';
+        item.style.justifyContent = 'space-between';
+        item.style.padding = '6px 8px';
+        item.style.borderRadius = '4px';
+        item.style.fontSize = '12px';
+        item.style.background = isDone ? '#f0fdf4' : '#ffffff';
+        item.style.border = '1px solid #f1f5f9';
+
+        item.innerHTML = `
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; flex:1;">
+            <input type="checkbox" class="checkbox" ${isDone ? 'checked' : ''} style="width:15px; height:15px;">
+            <span style="${isDone ? 'text-decoration:line-through; color:var(--text-muted);' : 'color:var(--text); font-weight:500;'}">${sumTitle}</span>
+          </label>
+          <button class="btn btn-sm" style="padding:2px 8px; font-size:11px;" title="Send problem to GitHub commit form">Commit ➔</button>
+        `;
+
+        const cb = item.querySelector('input');
+        cb.onchange = () => {
+          state.striverCompletedSums[sumTitle] = cb.checked;
+          if (cb.checked) {
+            if (!state.striverSolvedDays) state.striverSolvedDays = {};
+            state.striverSolvedDays[sumTitle] = state.selectedDay;
+          } else {
+            if (state.striverSolvedDays) delete state.striverSolvedDays[sumTitle];
+          }
+          saveState();
+          renderDailySubtopicSums(subtopicTitle);
+          renderFullStriverSheet();
+          updateUI();
+        };
+
+        const commitBtn = item.querySelector('button');
+        commitBtn.onclick = () => {
+          loadProblemIntoGitHubForm(sumTitle, foundSub.title);
+        };
+
+        container.appendChild(item);
+      });
+
+      if (badge) {
+        badge.innerText = `${doneCount} of ${foundSub.sums.length} solved`;
+      }
+    }
+
+    function renderFullStriverSheet(searchQuery = '') {
+      const container = document.getElementById('striverFullChecklistContainer');
+      container.innerHTML = '';
+
+      const query = searchQuery.toLowerCase().trim();
+
+      STRIVER_A2Z_FULL_SHEET.forEach(stepObj => {
+        const stepBox = document.createElement('div');
+        stepBox.className = 'striver-step-box';
+
+        let totalSumsInStep = 0;
+        let solvedInStep = 0;
+        let stepMatchingHTML = '';
+
+        stepObj.subtopics.forEach(sub => {
+          const matchingSums = sub.sums.filter(s => !query || s.toLowerCase().includes(query) || sub.title.toLowerCase().includes(query));
+          if (matchingSums.length === 0) return;
+
+          totalSumsInStep += sub.sums.length;
+          let subHTML = `<div class="striver-subtopic-section"><div class="striver-subtopic-heading">${sub.title}</div><div style="display:flex; flex-direction:column; gap:4px;">`;
+
+          matchingSums.forEach(sumTitle => {
+            const isDone = !!state.striverCompletedSums[sumTitle];
+            if (isDone) solvedInStep++;
+
+            subHTML += `
+              <div class="striver-sum-item">
+                <input type="checkbox" class="checkbox striver-cb" data-sum="${escapeHtml(sumTitle)}" ${isDone ? 'checked' : ''} style="width:14px; height:14px;">
+                <span style="flex:1; ${isDone ? 'text-decoration:line-through; color:var(--text-muted);' : 'font-weight:500;'}">${sumTitle}</span>
+                <button class="btn btn-sm" style="padding:1px 6px; font-size:11px;" onclick="loadProblemIntoGitHubForm('${escapeHtml(sumTitle)}', '${escapeHtml(sub.title)}')">Commit ➔</button>
+              </div>
+            `;
+          });
+
+          subHTML += `</div></div>`;
+          stepMatchingHTML += subHTML;
+        });
+
+        if (!stepMatchingHTML) return;
+
+        stepBox.innerHTML = `
+          <div class="striver-step-title">
+            <span>${stepObj.step}</span>
+            <span style="font-size:11px; font-weight:600; color:var(--text-muted);">${solvedInStep} / ${totalSumsInStep} Done</span>
+          </div>
+          <div>${stepMatchingHTML}</div>
+        `;
+
+        container.appendChild(stepBox);
+      });
+
+      // Bind all checkboxes
+      container.querySelectorAll('.striver-cb').forEach(cb => {
+        cb.onchange = () => {
+          const sumName = cb.getAttribute('data-sum');
+          state.striverCompletedSums[sumName] = cb.checked;
+          if (cb.checked) {
+            if (!state.striverSolvedDays) state.striverSolvedDays = {};
+            state.striverSolvedDays[sumName] = state.selectedDay;
+          } else {
+            if (state.striverSolvedDays) delete state.striverSolvedDays[sumName];
+          }
+          saveState();
+          updateUI();
+          const currentDailySub = state.dayDsaSubtopic[state.selectedDay] || STRIVER_A2Z_FULL_SHEET[0].subtopics[0].title;
+          renderDailySubtopicSums(currentDailySub);
+        };
+      });
+    }
+
+    function loadProblemIntoGitHubForm(sumTitle, subtopicTitle) {
+      // Switch tab to GitHub Tab
+      document.querySelectorAll('.tab-item').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      const ghTabBtn = document.querySelector('[data-tab="githubTab"]');
+      if (ghTabBtn) ghTabBtn.classList.add('active');
+      const ghTab = document.getElementById('githubTab');
+      if (ghTab) ghTab.classList.add('active');
+
+      // Populate input fields
+      document.getElementById('probTitleInput').value = sumTitle;
+      const sanitized = sumTitle.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+      document.getElementById('probFileInput').value = `${sanitized}.md`;
+      document.getElementById('probTopicInput').value = subtopicTitle;
+      document.getElementById('probCommitMsgInput').value = `solve: ${sumTitle} [${subtopicTitle}]`;
+
+      window.scrollTo({ top: 300, behavior: 'smooth' });
+    }
+
+    /* =====================================================================
+       HEADER & ROUTINE VIEW UPDATE
+       ===================================================================== */
+    function updateUI() {
+      const stats = calculateStats();
+      document.getElementById('currentStreakDisplay').innerText = `${stats.currentStreak} days`;
+      document.getElementById('totalDaysDisplay').innerText = `${stats.totalDays} days`;
+      document.getElementById('maxStreakDisplay').innerText = `${stats.maxStreak} days`;
+      document.getElementById('striverSolvedCountDisplay').innerText = `${stats.striverSolvedCount} / 447`;
+
+      const dayNum = state.selectedDay;
+      const curDate = getDateForDay(dayNum);
+      const formattedDate = formatDateFormatted(curDate);
+
+      document.getElementById('activeDayText').innerText = `Day ${dayNum} • ${formattedDate}`;
+      document.getElementById('activeDayPillLabel').innerText = `Day ${dayNum} (${formattedDate})`;
+      document.getElementById('daySelect').value = dayNum;
+
+      // Update Striver daily subtopic selector
+      const subtopicSelect = document.getElementById('dailyStriverSubtopicSelect');
+      const savedSubtopic = state.dayDsaSubtopic[dayNum] || STRIVER_A2Z_FULL_SHEET[0].subtopics[0].title;
+      subtopicSelect.value = savedSubtopic;
+      renderDailySubtopicSums(savedSubtopic);
+
+      // Routine mode: Weekday vs Weekend
+      const weekdayContainer = document.getElementById('weekdayBlocksContainer');
+      const weekendContainer = document.getElementById('weekendBlockContainer');
+      const weekdayBtn = document.getElementById('weekdayToggleBtn');
+      const weekendBtn = document.getElementById('weekendToggleBtn');
+
+      if (state.isWeekendView) {
+        weekdayBtn.classList.remove('active');
+        weekendBtn.classList.add('active');
+        weekdayContainer.style.display = 'none';
+        weekendContainer.style.display = 'block';
+      } else {
+        weekdayBtn.classList.add('active');
+        weekendBtn.classList.remove('active');
+        weekdayContainer.style.display = 'flex';
+        weekendContainer.style.display = 'none';
+      }
+
+      renderEveningTasks(dayNum);
+      syncCheckboxes(dayNum);
+      renderHeatmap();
+    }
+
+    function renderEveningTasks(dayNum) {
+      const container = document.getElementById('eveningTaskList');
+      container.innerHTML = '';
+
+      let tasks = [];
+      if (dayNum <= 15) {
+        tasks = [
+          { id: 'm1_ddl', text: 'Install PostgreSQL & write raw DDL for Fairness Audit (candidates, job profiles, audit logs)' },
+          { id: 'm1_dml', text: 'Write DML statements to insert and query synthetic audit data' }
+        ];
+      } else if (dayNum <= 30) {
+        tasks = [
+          { id: 'm1_fa', text: 'Build FastAPI bridge connecting to PostgreSQL' },
+          { id: 'm1_pyd', text: 'Enforce strict data validation using Pydantic V2 & trigger deliberate stack traces' }
+        ];
+      } else if (dayNum <= 45) {
+        tasks = [
+          { id: 'm2_init', text: 'Initialize React application & build dashboard layout' },
+          { id: 'm2_fetch', text: 'Manually write fetch requests to pull FastAPI data into frontend' }
+        ];
+      } else if (dayNum <= 60) {
+        tasks = [
+          { id: 'm2_state', text: 'Master state management & forms sending POST requests to API' },
+          { id: 'm2_cors', text: 'Configure FastAPI CORS middleware and debug network headers' }
+        ];
+      } else if (dayNum <= 75) {
+        tasks = [
+          { id: 'm3_docker', text: 'Learn Docker fundamentals & write separate Dockerfiles for FastAPI and React' },
+          { id: 'm3_net', text: 'Ensure containers communicate within a Docker network' }
+        ];
+      } else {
+        tasks = [
+          { id: 'm3_git', text: 'Push code to GitHub' },
+          { id: 'm3_supa', text: 'Deploy PostgreSQL database to Supabase' },
+          { id: 'm3_cloud', text: 'Deploy containerized backend and frontend to Render or AWS' }
+        ];
+      }
+
+      tasks.forEach(t => {
+        const div = document.createElement('div');
+        div.className = 'check-item';
+        div.setAttribute('data-task-id', t.id);
+        div.innerHTML = `
+          <input type="checkbox" class="checkbox">
+          <span class="item-text">${t.text}</span>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function syncCheckboxes(dayNum) {
+      const dayTasks = state.tasks[dayNum] || {};
+      const allItems = document.querySelectorAll('.check-item');
+
+      allItems.forEach(item => {
+        const taskId = item.getAttribute('data-task-id');
+        const isDone = !!dayTasks[taskId];
+        const cb = item.querySelector('.checkbox');
+        cb.checked = isDone;
+
+        if (isDone) item.classList.add('done');
+        else item.classList.remove('done');
+
+        item.onclick = (e) => {
+          if (e.target.tagName !== 'INPUT') cb.checked = !cb.checked;
+          toggleTask(dayNum, taskId, cb.checked);
+        };
+        cb.onchange = (e) => toggleTask(dayNum, taskId, e.target.checked);
+      });
+    }
+
+    function toggleTask(dayNum, taskId, checked) {
+      if (!state.tasks[dayNum]) state.tasks[dayNum] = {};
+      state.tasks[dayNum][taskId] = checked;
+      saveState();
+      updateUI();
+    }
+
+    function selectDay(dayNum) {
+      if (dayNum < 1) dayNum = 1;
+      if (dayNum > 90) dayNum = 90;
+      state.selectedDay = dayNum;
+
+      state.isWeekendView = isDayWeekend(dayNum);
+
+      saveState();
+      updateUI();
+    }
+
+    /* =====================================================================
+       DAY SELECTOR POPULATION (REAL DATES)
+       ===================================================================== */
+    function populateDaySelect() {
+      const select = document.getElementById('daySelect');
+      select.innerHTML = '';
+      for (let i = 1; i <= 90; i++) {
+        const d = getDateForDay(i);
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.innerText = `Day ${i} — ${formatDateFormatted(d)} ${isDayWeekend(i) ? '(Weekend)' : ''}`;
+        select.appendChild(opt);
+      }
+      select.value = state.selectedDay;
+      select.onchange = (e) => selectDay(parseInt(e.target.value, 10));
+    }
+
+    /* =====================================================================
+       GITHUB REPO SYNC (my_coding)
+       ===================================================================== */
+    function setupGitHub() {
+      document.getElementById('ghUser').value = state.github.username || '';
+      document.getElementById('ghRepo').value = state.github.repo || 'my_coding';
+      document.getElementById('ghBranch').value = state.github.branch || 'main';
+      document.getElementById('ghToken').value = state.github.token || '';
+      updateGhBadge();
+
+      document.getElementById('ghUser').oninput = updateGhBadge;
+      document.getElementById('ghRepo').oninput = updateGhBadge;
+
+      document.getElementById('saveGhSettingsBtn').onclick = () => {
+        state.github.username = document.getElementById('ghUser').value.trim();
+        state.github.repo = document.getElementById('ghRepo').value.trim() || 'my_coding';
+        state.github.branch = document.getElementById('ghBranch').value.trim() || 'main';
+        state.github.token = document.getElementById('ghToken').value.trim();
+        saveState();
+        updateGhBadge();
+        showStatus('✅ GitHub settings saved for repository my_coding!', 'green');
+      };
+
+      // Auto update file & commit message placeholders
+      const titleInput = document.getElementById('probTitleInput');
+      const fileInput = document.getElementById('probFileInput');
+      const commitInput = document.getElementById('probCommitMsgInput');
+      const probTopicSelect = document.getElementById('probTopicInput');
+
+      titleInput.oninput = () => {
+        const t = titleInput.value.trim();
+        const top = probTopicSelect.value;
+        if (t) {
+          const sanitized = t.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+          fileInput.placeholder = `${sanitized}.md`;
+          commitInput.placeholder = `solve: ${t} [${top}]`;
+          if (!commitInput.value) commitInput.value = `solve: ${t} [${top}]`;
+        }
+      };
+
+      document.getElementById('commitGhBtn').onclick = () => recordProblem(true);
+      document.getElementById('saveLocalProbBtn').onclick = () => recordProblem(false);
+    }
+
+    function updateGhBadge() {
+      const u = document.getElementById('ghUser').value.trim() || 'username';
+      const r = document.getElementById('ghRepo').value.trim() || 'my_coding';
+      document.getElementById('ghTargetPreview').innerText = `${u}/${r}`;
+      document.getElementById('repoHeaderBadge').innerText = `github.com/${u}/${r}`;
+    }
+
+    async function recordProblem(pushToGithub) {
+      const title = document.getElementById('probTitleInput').value.trim();
+      let fileName = document.getElementById('probFileInput').value.trim();
+      const topic = document.getElementById('probTopicInput').value;
+      let commitMsg = document.getElementById('probCommitMsgInput').value.trim();
+      const notes = document.getElementById('probNotesInput').value.trim();
+
+      if (!title) {
+        alert('Please enter a problem name.');
+        return;
+      }
+
+      if (!fileName) {
+        const sanitized = title.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+        fileName = `${sanitized}.md`;
+      }
+
+      if (!commitMsg) {
+        commitMsg = `solve: ${title} [${topic}]`;
+      }
+
+      const curDate = getDateForDay(state.selectedDay);
+      const fileContent = `# ${title}\n\n- **Striver's A2Z Topic:** ${topic}\n- **Date:** ${formatDateFormatted(curDate)}\n- **Blueprint Day:** Day ${state.selectedDay}\n\n## Description & Notes\n\n${notes}\n`;
+
+      let ghUrl = null;
+      if (pushToGithub) {
+        const { username, repo, branch, token } = state.github;
+        if (!username || !token) {
+          alert('Please enter your GitHub Username and Token in the settings box above.');
+          return;
+        }
+
+        showStatus(`⏳ Committing ${fileName} to GitHub repo ${repo}...`, 'blue');
+
+        try {
+          const pathEncoded = encodeURIComponent(fileName);
+          const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/${pathEncoded}`;
+
+          let sha = null;
+          try {
+            const check = await fetch(apiUrl, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/vnd.github+json'
+              }
+            });
+            if (check.ok) {
+              const checkData = await check.json();
+              sha = checkData.sha;
+            }
+          } catch (e) {}
+
+          const base64Content = btoa(unescape(encodeURIComponent(fileContent)));
+          const payload = {
+            message: commitMsg,
+            content: base64Content,
+            branch: branch || 'main'
+          };
+          if (sha) payload.sha = sha;
+
+          const res = await fetch(apiUrl, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Accept': 'application/vnd.github+json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (!res.ok) {
+            const errJson = await res.json().catch(() => ({}));
+            throw new Error(errJson.message || `HTTP ${res.status}`);
+          }
+
+          const resData = await res.json();
+          ghUrl = resData.content ? resData.content.html_url : `https://github.com/${username}/${repo}/blob/${branch}/${fileName}`;
+          showStatus(`✅ Successfully committed ${fileName} to ${repo}!`, 'green');
+        } catch (err) {
+          showStatus(`❌ GitHub Error: ${err.message}. Saved locally.`, 'red');
+        }
+      } else {
+        showStatus(`💾 Saved locally in browser tracker.`, 'green');
+      }
+
+      // Mark this sum as completed in Striver checklist automatically
+      state.striverCompletedSums[title] = true;
+      if (!state.striverSolvedDays) state.striverSolvedDays = {};
+      state.striverSolvedDays[title] = state.selectedDay;
+
+      const problemRecord = {
+        id: 'p_' + Date.now(),
+        day: state.selectedDay,
+        dateStr: formatDateFormatted(curDate),
+        title,
+        fileName,
+        topic,
+        commitMsg,
+        notes,
+        githubUrl: ghUrl
+      };
+
+      state.problems.unshift(problemRecord);
+      saveState();
+
+      // Clear input
+      document.getElementById('probTitleInput').value = '';
+      document.getElementById('probFileInput').value = '';
+      document.getElementById('probCommitMsgInput').value = '';
+      document.getElementById('probNotesInput').value = '';
+
+      updateUI();
+      renderProblemList();
+    }
+
+    function showStatus(msg, color) {
+      const banner = document.getElementById('statusBanner');
+      banner.style.display = 'block';
+      banner.innerText = msg;
+      if (color === 'green') {
+        banner.style.background = '#f0fdf4';
+        banner.style.color = '#15803d';
+        banner.style.border = '1px solid #bbf7d0';
+      } else if (color === 'red') {
+        banner.style.background = '#fef2f2';
+        banner.style.color = '#b91c1c';
+        banner.style.border = '1px solid #fecaca';
+      } else {
+        banner.style.background = '#f0f9ff';
+        banner.style.color = '#0369a1';
+        banner.style.border = '1px solid #bae6fd';
+      }
+    }
+
+    function renderProblemList() {
+      const container = document.getElementById('problemListContainer');
+      const count = document.getElementById('probCountLabel');
+      container.innerHTML = '';
+      count.innerText = `${state.problems.length} problem(s)`;
+
+      if (state.problems.length === 0) {
+        container.innerHTML = `<div style="font-size:12px; color:var(--text-muted); text-align:center; padding:16px;">No problems committed yet.</div>`;
+        return;
+      }
+
+      state.problems.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'problem-item';
+        item.innerHTML = `
+          <div class="prob-header">
+            <div>
+              <span class="prob-name">${p.title}</span>
+              <span style="font-size:11px; color:var(--text-muted); margin-left:6px;">(${p.topic} • Day ${p.day})</span>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              ${p.githubUrl ? `<a href="${p.githubUrl}" target="_blank" class="github-link">View in my_coding ↗</a>` : `<span style="font-size:11px; color:var(--text-muted);">Local</span>`}
+              <button class="btn btn-sm" style="padding:1px 5px; font-size:11px; color:#ef4444;" onclick="deleteProb('${p.id}')">✕</button>
+            </div>
+          </div>
+          <div style="font-size:11px; color:var(--text-muted); font-family:var(--mono);">File: ${p.fileName} | Commit: "${p.commitMsg || p.title}"</div>
+          ${p.notes ? `<div class="prob-desc">${escapeHtml(p.notes)}</div>` : ''}
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function deleteProb(id) {
+      if (confirm('Delete this problem entry?')) {
+        state.problems = state.problems.filter(p => p.id !== id);
+        saveState();
+        updateUI();
+        renderProblemList();
+      }
+    }
+
+    function escapeHtml(t) {
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+      return t.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    /* =====================================================================
+       GENERAL ACTIONS
+       ===================================================================== */
+    function setupActions() {
+      // Sync Today as Day 1
+      document.getElementById('resetStartDateBtn').onclick = () => {
+        if (confirm('Set today as Day 1? All 90 days will be re-aligned starting from today.')) {
+          state.startDateStr = getTodayDateStr();
+          state.selectedDay = 1;
+          state.isWeekendView = isDayWeekend(1);
+          saveState();
+          populateDaySelect();
+          updateUI();
+          alert('✅ Re-aligned: Today is now Day 1!');
+        }
+      };
+
+      // Search in full Striver sheet
+      const searchInput = document.getElementById('striverSearchInput');
+      if (searchInput) {
+        searchInput.oninput = (e) => {
+          renderFullStriverSheet(e.target.value);
+        };
+      }
+
+      // Routine toggle buttons
+      document.getElementById('weekdayToggleBtn').onclick = () => {
+        state.isWeekendView = false;
+        saveState();
+        updateUI();
+      };
+      document.getElementById('weekendToggleBtn').onclick = () => {
+        state.isWeekendView = true;
+        saveState();
+        updateUI();
+      };
+
+      // Check-in today
+      document.getElementById('checkinTodayBtn').onclick = () => {
+        const day = state.selectedDay;
+        if (!state.tasks[day]) state.tasks[day] = {};
+        document.querySelectorAll('.check-item').forEach(el => {
+          if (el.closest('#weekdayBlocksContainer') && !state.isWeekendView) {
+            state.tasks[day][el.getAttribute('data-task-id')] = true;
+          }
+          if (el.closest('#weekendBlockContainer') && state.isWeekendView) {
+            state.tasks[day][el.getAttribute('data-task-id')] = true;
+          }
+        });
+        saveState();
+        updateUI();
+        alert(`🔥 Day ${day} checked in! Streak updated.`);
+      };
+
+      // Prev / Next
+      document.getElementById('prevDayBtn').onclick = () => selectDay(state.selectedDay - 1);
+      document.getElementById('nextDayBtn').onclick = () => selectDay(state.selectedDay + 1);
+
+      // Export JSON
+      document.getElementById('exportBtn').onclick = () => {
+        const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `my_coding_blueprint_backup_${getTodayDateStr()}.json`;
+        a.click();
+      };
+
+      // Import JSON
+      const importInput = document.getElementById('importFileInput');
+      document.getElementById('importBtn').onclick = () => importInput.click();
+      importInput.onchange = (e) => {
+        const f = e.target.files[0];
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = (ev) => {
+          try {
+            state = { ...state, ...JSON.parse(ev.target.result) };
+            saveState();
+            populateDaySelect();
+            updateUI();
+            renderProblemList();
+            setupGitHub();
+            alert('✅ Backup restored!');
+          } catch (err) {
+            alert('❌ Failed to parse file.');
+          }
+        };
+        r.readAsText(f);
+      };
+
+      // Tab switcher
+      document.querySelectorAll('.tab-item').forEach(btn => {
+        btn.onclick = () => {
+          document.querySelectorAll('.tab-item').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+          btn.classList.add('active');
+          document.getElementById(btn.getAttribute('data-tab')).classList.add('active');
+        };
+      });
+    }
+
+    /* =====================================================================
+       INITIALIZE
+       ===================================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      loadState();
+      populateStriverComponents();
+      populateDaySelect();
+      setupGitHub();
+      setupActions();
+      updateUI();
+      renderProblemList();
+    });
+  </script>
+</body>
+</html>
