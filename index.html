@@ -437,6 +437,20 @@
       font-family: var(--mono);
     }
 
+    .energy-badge {
+      font-size: 11px;
+      font-weight: 600;
+      color: #0284c7;
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      padding: 3px 9px;
+      border-radius: 999px;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      letter-spacing: 0.2px;
+    }
+
     /* Striver Sheet Components */
     .striver-control-panel {
       display: flex;
@@ -818,7 +832,7 @@
       <button class="tab-item active" data-tab="blueprintTab">Daily Checklist</button>
       <button class="tab-item" data-tab="striverFullTab">Striver A2Z Full Sheet (~447 Sums)</button>
       <button class="tab-item" data-tab="githubTab">Commit to GitHub (my_coding)</button>
-      <button class="tab-item" data-tab="monthTab">Month-by-Month Plan</button>
+      <button class="tab-item" data-tab="monthTab">3-Month Skills Roadmap</button>
     </div>
 
     <!-- TAB 1: DAILY BLUEPRINT (Afternoon block contains ONLY Striver's A2Z Sheet) -->
@@ -827,40 +841,40 @@
       <!-- WEEKDAY VIEW (Shown Monday to Friday) -->
       <div id="weekdayBlocksContainer" style="display:flex; flex-direction:column; gap:16px;">
         
-        <!-- Morning (1.5h): GATE Subjects by Weightage -->
+        <!-- Block 1: Morning Deep Work — Core CS & GATE Prep (1.0 hr target: DBMS, OS, Discrete Math) -->
         <div class="card">
           <div class="block-header">
             <div>
-              <div class="block-title">Morning (1.5 Hours) — Core CS & GATE Prep</div>
-              <div class="block-meta">Fundamental theory study before keyboard (No AI code generation)</div>
+              <div class="block-title">Block 1: Morning Deep Work — Core CS & GATE Prep</div>
+              <div class="block-meta">1.0 hr target: DBMS, OS, Discrete Math • Fundamental theory study before keyboard (No AI code generation)</div>
             </div>
-            <span style="font-size:12px; color:var(--text-muted);">07:00 – 08:30</span>
+            <span class="energy-badge">1.0 hr target</span>
           </div>
 
           <div style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">
-            GATE CS Subjects according to weightage:
+            Target focus: Database Management Systems (DBMS), Operating Systems, Discrete Mathematics & Core CS:
           </div>
 
           <div class="check-list" id="gateSubjectsList">
+            <div class="check-item" data-task-id="gate_dbms">
+              <input type="checkbox" class="checkbox">
+              <span class="item-text">Database Management Systems (DBMS)</span>
+              <span class="item-weightage">Core Target • ~8 Marks</span>
+            </div>
+            <div class="check-item" data-task-id="gate_os">
+              <input type="checkbox" class="checkbox">
+              <span class="item-text">Operating Systems</span>
+              <span class="item-weightage">Core Target • ~10 Marks</span>
+            </div>
             <div class="check-item" data-task-id="gate_math">
               <input type="checkbox" class="checkbox">
               <span class="item-text">Engineering Mathematics & Discrete Mathematics</span>
-              <span class="item-weightage">~15 Marks</span>
+              <span class="item-weightage">Core Target • ~15 Marks</span>
             </div>
             <div class="check-item" data-task-id="gate_algo">
               <input type="checkbox" class="checkbox">
               <span class="item-text">Data Structures & Algorithms</span>
               <span class="item-weightage">~13 Marks</span>
-            </div>
-            <div class="check-item" data-task-id="gate_os">
-              <input type="checkbox" class="checkbox">
-              <span class="item-text">Operating Systems</span>
-              <span class="item-weightage">~10 Marks</span>
-            </div>
-            <div class="check-item" data-task-id="gate_dbms">
-              <input type="checkbox" class="checkbox">
-              <span class="item-text">Database Management Systems (DBMS)</span>
-              <span class="item-weightage">~8 Marks</span>
             </div>
             <div class="check-item" data-task-id="gate_cn">
               <input type="checkbox" class="checkbox">
@@ -890,14 +904,22 @@
           </div>
         </div>
 
-        <!-- Afternoon (1.5h): DSA in C++ (STRICTLY STRIVER'S A2Z SHEET) -->
+        <!-- Block 2: Afternoon Problem-Solving — DSA in C++ (1.0 hr target: 1–2 Striver A2Z sums, logic on paper first) -->
         <div class="card">
           <div class="block-header">
             <div>
-              <div class="block-title">Afternoon (1.5 Hours) — DSA in C++ (Striver's A2Z Sheet)</div>
-              <div class="block-meta">Rule: Write logic on paper first • Concept lookup only if stuck</div>
+              <div class="block-title">Block 2: Afternoon Problem-Solving — DSA in C++</div>
+              <div class="block-meta">1.0 hr target: 1–2 Striver A2Z sums, logic on paper first • Concept lookup only if stuck</div>
             </div>
-            <span style="font-size:12px; color:var(--text-muted);">14:00 – 15:30</span>
+            <span class="energy-badge">1.0 hr target</span>
+          </div>
+
+          <div class="check-list" style="margin-bottom:6px;">
+            <div class="check-item" data-task-id="dsa_paper_logic">
+              <input type="checkbox" class="checkbox">
+              <span class="item-text">Solve 1–2 Striver A2Z sums (write logic & variable traces on paper first)</span>
+              <span class="item-weightage">1.0 hr Target</span>
+            </div>
           </div>
 
           <!-- Striver's A2Z Sheet Daily Subtopic & Sums Checklist -->
@@ -924,14 +946,14 @@
           </div>
         </div>
 
-        <!-- Evening (2h): Project Engineering -->
+        <!-- Block 3: Evening Engineering — LineUpX Lab & Code (1.0 – 1.5 hr target: 1 Code Lab + local test + commit) -->
         <div class="card">
           <div class="block-header">
             <div>
-              <div class="block-title">Evening (2 Hours) — Project Engineering</div>
-              <div class="block-meta">Active building phase • Close ChatGPT • Open official docs</div>
+              <div class="block-title">Block 3: Evening Engineering — LineUpX Lab & Code</div>
+              <div class="block-meta">1.0 – 1.5 hr target: 1 Code Lab + local test + commit • Active engineering phase • Official docs</div>
             </div>
-            <span style="font-size:12px; color:var(--text-muted);">19:30 – 21:30</span>
+            <span class="energy-badge">1.0 – 1.5 hr target</span>
           </div>
 
           <div class="check-list" id="eveningTaskList">
@@ -941,36 +963,82 @@
 
       </div>
 
-      <!-- WEEKEND VIEW (Shown on Saturday & Sunday ONLY) -->
-      <div id="weekendBlockContainer" style="display:none;">
+      <!-- WEEKEND VIEW (Shown on Saturday & Sunday OR via Weekend Toggle) -->
+      <div id="weekendBlockContainer" style="display:none; flex-direction:column; gap:16px;">
+        
+        <!-- Block 4A: LineUpX Track Sprint -->
         <div class="card">
           <div class="block-header">
             <div>
-              <div class="block-title">Weekends (4 Hours) — Review & Integration</div>
-              <div class="block-meta">Weekly consolidation & testing (Saturday & Sunday routine)</div>
+              <div class="block-title">Block 4A: LineUpX Track Sprint</div>
+              <div class="block-meta">2.0 – 2.5 hrs target: Work through the 60-question practice modules at an unhurried pace</div>
             </div>
-            <span style="font-size:12px; color:var(--text-muted);">4.0 Hours</span>
+            <span class="energy-badge">2.0 – 2.5 hrs target</span>
           </div>
 
           <div class="check-list">
-            <div class="check-item" data-task-id="w_cpp">
+            <div class="check-item" data-task-id="w_lineupx_sprint">
               <input type="checkbox" class="checkbox">
-              <span class="item-text">Review the week's C++ concepts</span>
+              <span class="item-text">Work through LineUpX 60-question practice track sprint at an unhurried pace</span>
+              <span class="item-weightage">Sprint</span>
             </div>
-            <div class="check-item" data-task-id="w_wire">
+            <div class="check-item" data-task-id="w_lineupx_test">
               <input type="checkbox" class="checkbox">
-              <span class="item-text">Wire your backend API to your frontend</span>
+              <span class="item-text">Execute queries & scripts locally on live engine; test edge cases</span>
+              <span class="item-weightage">Verification</span>
             </div>
-            <div class="check-item" data-task-id="w_cors">
+            <div class="check-item" data-task-id="w_lineupx_commit">
               <input type="checkbox" class="checkbox">
-              <span class="item-text">Debug CORS errors by reading network logs</span>
-            </div>
-            <div class="check-item" data-task-id="w_mock">
-              <input type="checkbox" class="checkbox">
-              <span class="item-text">Take timed mock assessments for your core CS subjects</span>
+              <span class="item-text">Review weekly solutions and commit solved modules to GitHub (my_coding)</span>
+              <span class="item-weightage">Git Commit</span>
             </div>
           </div>
         </div>
+
+        <!-- Block 4B: Weekend Elective Course -->
+        <div class="card">
+          <div class="block-header">
+            <div>
+              <div class="block-title">Block 4B: Weekend Elective Course</div>
+              <div class="block-meta">1.5 – 2.0 hrs target: Open / flexible course slot for specialized skills & backend systems</div>
+            </div>
+            <span class="energy-badge">1.5 – 2.0 hrs target</span>
+          </div>
+
+          <div style="background:#f8fafc; border:1px solid var(--border); border-radius:6px; padding:12px; display:flex; flex-direction:column; gap:8px;">
+            <label style="font-size:12px; font-weight:600; color:var(--text);" for="weekendCourseNameInput">
+              Course Name & Platform
+            </label>
+            <div style="display:flex; gap:8px;">
+              <input type="text" class="form-input" id="weekendCourseNameInput" 
+                     placeholder="e.g. DeepLearning.AI MCP, Anthropic Interactive Guide, System Design Primer" 
+                     style="flex:1;">
+              <button class="btn btn-sm" id="saveWeekendCourseBtn" type="button">Save Course</button>
+            </div>
+            <span style="font-size:11px; color:var(--text-muted);">
+              Persisted in localStorage. Update anytime to match your current elective focus.
+            </span>
+          </div>
+
+          <div class="check-list">
+            <div class="check-item" data-task-id="w_course_module">
+              <input type="checkbox" class="checkbox">
+              <span class="item-text" id="weekendCourseModuleLabel">Completed Weekend Course Module</span>
+              <span class="item-weightage" id="weekendCourseModuleBadge">Elective</span>
+            </div>
+            <div class="check-item" data-task-id="w_course_notes">
+              <input type="checkbox" class="checkbox">
+              <span class="item-text">Synthesize core architectural concepts & notes in repository</span>
+              <span class="item-weightage">Notes</span>
+            </div>
+            <div class="check-item" data-task-id="w_course_hands_on">
+              <input type="checkbox" class="checkbox">
+              <span class="item-text">Implement hands-on code sample or local lab experiment</span>
+              <span class="item-weightage">Hands-on</span>
+            </div>
+          </div>
+        </div>
+
       </div>
 
     </section>
@@ -1080,49 +1148,110 @@
       </div>
     </section>
 
-    <!-- TAB 4: MONTH-BY-MONTH PLAN (Strictly from image) -->
+    <!-- TAB 4: 3-MONTH SKILLS ROADMAP (Single Focus: Backend & Database Systems) -->
     <section class="tab-content" id="monthTab">
-      <div class="card">
-        <div class="block-title">Month 1: Data and Logic (Days 1–30)</div>
-        <p style="font-size:13px; color:var(--text-muted);">
-          Your goal this month is to master data persistence and backend routing without relying on LLMs to write the syntax.
-        </p>
-        <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
-          <div style="padding:10px; background:#f8fafc; border-radius:6px;">
-            <strong>Days 1–15:</strong> Install PostgreSQL. Write raw DDL statements to design a normalized relational schema for your Fairness Audit project. Create tables for candidates, job profiles, and audit logs. Write DML statements to insert and query synthetic data.
+      <!-- Roadmap Overview Card -->
+      <div class="card" style="background: linear-gradient(to right, #f8fafc, #f1f5f9); border-left: 4px solid #0284c7;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;">
+          <div>
+            <div style="font-size:16px; font-weight:700; color:var(--text);">3-Month Skills Roadmap: Backend & Database Systems</div>
+            <div style="font-size:13px; color:var(--text-muted); margin-top:2px;">
+              Sustainable 3-phase progression • Oct 20 – Dec 31 • Relational query mastery, typed API architecture & cloud deployment
+            </div>
           </div>
-          <div style="padding:10px; background:#f8fafc; border-radius:6px;">
-            <strong>Days 16–30:</strong> Build the FastAPI bridge. Write endpoints that connect to your PostgreSQL database. Use Pydantic V2 to enforce strict data validation. Trigger errors on purpose to learn how to read Python stack traces.
+          <span class="energy-badge">Oct 20 – Dec 31</span>
+        </div>
+      </div>
+
+      <!-- Phase 1 -->
+      <div class="card">
+        <div class="block-header">
+          <div>
+            <div class="block-title" style="font-size:15px;">Phase 1: SQL Foundations & Query Mastery</div>
+            <div class="block-meta">Master relational data querying on live engines without relying on AI code generation.</div>
+          </div>
+          <span class="energy-badge">Oct 20 – Nov 15</span>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top:4px;">
+          <div style="padding:12px; background:#f8fafc; border-radius:6px; border-left:3px solid #0284c7;">
+            <div style="font-weight:700; font-size:11px; color:#0284c7; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">
+              Weekday Tasks
+            </div>
+            <div style="font-size:13px; color:var(--text); line-height:1.6;">
+              Solve 1–2 LineUpX SQL lab scenarios daily (Joins, Aggregations, GROUP BY/HAVING, CTEs, Window Functions).
+            </div>
+          </div>
+
+          <div style="padding:12px; background:#f8fafc; border-radius:6px; border-left:3px solid #16a34a;">
+            <div style="font-weight:700; font-size:11px; color:#16a34a; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">
+              Weekend Goals
+            </div>
+            <div style="font-size:13px; color:var(--text); line-height:1.6;">
+              Complete LineUpX SQL 60-Question Track + Your Chosen Weekend Course.
+            </div>
           </div>
         </div>
       </div>
 
+      <!-- Phase 2 -->
       <div class="card">
-        <div class="block-title">Month 2: The Interface (Days 31–60)</div>
-        <p style="font-size:13px; color:var(--text-muted);">
-          Your goal is to make your APIs usable by building a client-facing frontend.
-        </p>
-        <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
-          <div style="padding:10px; background:#f8fafc; border-radius:6px;">
-            <strong>Days 31–45:</strong> Initialize a React application. Build a dashboard layout. Manually write the fetch requests to pull your FastAPI data into the frontend.
+        <div class="block-header">
+          <div>
+            <div class="block-title" style="font-size:15px;">Phase 2: Python Data Handling & API Architecture</div>
+            <div class="block-meta">Connect database queries to type-safe, validated backend endpoints.</div>
           </div>
-          <div style="padding:10px; background:#f8fafc; border-radius:6px;">
-            <strong>Days 46–60:</strong> Master state management. Add forms to your React app that send POST requests back to your API (e.g., submitting new parameters for a fairness audit or sending text to your MCP gateway). Fight through the inevitable CORS issues by configuring your FastAPI middleware.
+          <span class="energy-badge">Nov 16 – Dec 7</span>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top:4px;">
+          <div style="padding:12px; background:#f8fafc; border-radius:6px; border-left:3px solid #0284c7;">
+            <div style="font-weight:700; font-size:11px; color:#0284c7; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">
+              Weekday Tasks
+            </div>
+            <div style="font-size:13px; color:var(--text); line-height:1.6;">
+              Practice Python data handling on LineUpX. Build FastAPI routes wrapping your SQL queries with Pydantic V2 schemas.
+            </div>
+          </div>
+
+          <div style="padding:12px; background:#f8fafc; border-radius:6px; border-left:3px solid #16a34a;">
+            <div style="font-weight:700; font-size:11px; color:#16a34a; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">
+              Weekend Goals
+            </div>
+            <div style="font-size:13px; color:var(--text); line-height:1.6;">
+              Complete LineUpX Python 60-Question Track + Your Chosen Weekend Course.
+            </div>
           </div>
         </div>
       </div>
 
+      <!-- Phase 3 -->
       <div class="card">
-        <div class="block-title">Month 3: Production & Infrastructure (Days 61–90)</div>
-        <p style="font-size:13px; color:var(--text-muted);">
-          Your goal is to take the working full-stack application off your localhost and put it on the internet.
-        </p>
-        <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
-          <div style="padding:10px; background:#f8fafc; border-radius:6px;">
-            <strong>Days 61–75:</strong> Learn Docker fundamentals. Write a <code>Dockerfile</code> for your FastAPI backend and a separate one for your React frontend. Ensure they can communicate within a Docker network.
+        <div class="block-header">
+          <div>
+            <div class="block-title" style="font-size:15px;">Phase 3: Concurrency, Performance & Deployment</div>
+            <div class="block-meta">Understand database behavior under load and take your service live.</div>
           </div>
-          <div style="padding:10px; background:#f8fafc; border-radius:6px;">
-            <strong>Days 76–90:</strong> Push your code to GitHub. Deploy your database to a managed service like Supabase. Deploy your containerized backend and frontend to a cloud platform like Render or AWS.
+          <span class="energy-badge">Dec 8 – Dec 31</span>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top:4px;">
+          <div style="padding:12px; background:#f8fafc; border-radius:6px; border-left:3px solid #0284c7;">
+            <div style="font-weight:700; font-size:11px; color:#0284c7; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">
+              Weekday Tasks
+            </div>
+            <div style="font-size:13px; color:var(--text); line-height:1.6;">
+              Study execution plans (EXPLAIN ANALYZE), indexes, and database transactions (BEGIN, COMMIT, ROLLBACK).
+            </div>
+          </div>
+
+          <div style="padding:12px; background:#f8fafc; border-radius:6px; border-left:3px solid #16a34a;">
+            <div style="font-weight:700; font-size:11px; color:#16a34a; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">
+              Weekend Goals
+            </div>
+            <div style="font-size:13px; color:var(--text); line-height:1.6;">
+              Connect an async database pool to FastAPI, deploy backend + database to the cloud, and review GitHub commit streak.
+            </div>
           </div>
         </div>
       </div>
@@ -4208,6 +4337,7 @@
       startDateStr: null,
       selectedDay: 1,
       isWeekendView: false,
+      weekendCourseName: 'DeepLearning.AI MCP',
       dayDsaSubtopic: {}, // { [dayNum]: subtopicTitle }
       striverCompletedSums: {}, // { [sumTitle]: boolean }
       striverSolvedDays: {}, // { [sumTitle]: dayNum } - tracks which day a sum was completed
@@ -4262,6 +4392,10 @@
         }
       } catch (e) {
         console.error(e);
+      }
+
+      if (!state.weekendCourseName) {
+        state.weekendCourseName = 'DeepLearning.AI MCP';
       }
 
       if (!state.startDateStr) {
@@ -4724,12 +4858,23 @@
         weekdayBtn.classList.remove('active');
         weekendBtn.classList.add('active');
         weekdayContainer.style.display = 'none';
-        weekendContainer.style.display = 'block';
+        weekendContainer.style.display = 'flex';
       } else {
         weekdayBtn.classList.add('active');
         weekendBtn.classList.remove('active');
         weekdayContainer.style.display = 'flex';
         weekendContainer.style.display = 'none';
+      }
+
+      // Sync weekend elective course input and label
+      const courseInput = document.getElementById('weekendCourseNameInput');
+      if (courseInput && document.activeElement !== courseInput) {
+        courseInput.value = state.weekendCourseName || '';
+      }
+      const courseLabel = document.getElementById('weekendCourseModuleLabel');
+      if (courseLabel) {
+        const cName = (state.weekendCourseName || '').trim();
+        courseLabel.innerText = cName ? `Completed Weekend Course Module (${cName})` : 'Completed Weekend Course Module';
       }
 
       renderEveningTasks(dayNum);
@@ -4741,39 +4886,43 @@
       const container = document.getElementById('eveningTaskList');
       container.innerHTML = '';
 
+      let phaseTitle = '';
+      let phaseDates = '';
       let tasks = [];
-      if (dayNum <= 15) {
+
+      // Phase 1: Oct 20 – Nov 15 (Days 1–27)
+      // Phase 2: Nov 16 – Dec 7 (Days 28–49)
+      // Phase 3: Dec 8 – Dec 31 (Days 50+)
+      if (dayNum <= 27) {
+        phaseTitle = 'Phase 1: SQL Foundations & Query Mastery';
+        phaseDates = 'Oct 20 – Nov 15';
         tasks = [
-          { id: 'm1_ddl', text: 'Install PostgreSQL & write raw DDL for Fairness Audit (candidates, job profiles, audit logs)' },
-          { id: 'm1_dml', text: 'Write DML statements to insert and query synthetic audit data' }
+          { id: 'p1_sql_lab', text: 'Solve 1–2 LineUpX SQL lab scenarios daily (Joins, Aggregations, GROUP BY/HAVING, CTEs, Window Functions)' },
+          { id: 'p1_sql_engine', text: 'Local test: Execute queries on live relational database engine without AI code generation' },
+          { id: 'p1_sql_commit', text: 'Commit verified SQL queries, schema DDL/DML, and notes to GitHub (my_coding)' }
         ];
-      } else if (dayNum <= 30) {
+      } else if (dayNum <= 49) {
+        phaseTitle = 'Phase 2: Python Data Handling & API Architecture';
+        phaseDates = 'Nov 16 – Dec 7';
         tasks = [
-          { id: 'm1_fa', text: 'Build FastAPI bridge connecting to PostgreSQL' },
-          { id: 'm1_pyd', text: 'Enforce strict data validation using Pydantic V2 & trigger deliberate stack traces' }
-        ];
-      } else if (dayNum <= 45) {
-        tasks = [
-          { id: 'm2_init', text: 'Initialize React application & build dashboard layout' },
-          { id: 'm2_fetch', text: 'Manually write fetch requests to pull FastAPI data into frontend' }
-        ];
-      } else if (dayNum <= 60) {
-        tasks = [
-          { id: 'm2_state', text: 'Master state management & forms sending POST requests to API' },
-          { id: 'm2_cors', text: 'Configure FastAPI CORS middleware and debug network headers' }
-        ];
-      } else if (dayNum <= 75) {
-        tasks = [
-          { id: 'm3_docker', text: 'Learn Docker fundamentals & write separate Dockerfiles for FastAPI and React' },
-          { id: 'm3_net', text: 'Ensure containers communicate within a Docker network' }
+          { id: 'p2_python_lab', text: 'Practice Python data handling on LineUpX daily scenarios' },
+          { id: 'p2_fastapi_routes', text: 'Build FastAPI routes wrapping your SQL queries with Pydantic V2 schemas' },
+          { id: 'p2_test_commit', text: 'Local test: Trigger deliberate validation errors, inspect stack traces & commit to GitHub (my_coding)' }
         ];
       } else {
+        phaseTitle = 'Phase 3: Concurrency, Performance & Deployment';
+        phaseDates = 'Dec 8 – Dec 31';
         tasks = [
-          { id: 'm3_git', text: 'Push code to GitHub' },
-          { id: 'm3_supa', text: 'Deploy PostgreSQL database to Supabase' },
-          { id: 'm3_cloud', text: 'Deploy containerized backend and frontend to Render or AWS' }
+          { id: 'p3_db_deepdive', text: 'Study execution plans (EXPLAIN ANALYZE), indexes, and database transactions (BEGIN, COMMIT, ROLLBACK)' },
+          { id: 'p3_async_deploy', text: 'Connect an async database pool to FastAPI & deploy backend + database to the cloud' },
+          { id: 'p3_review_commit', text: 'Review GitHub commit streak and push production configuration changes to my_coding' }
         ];
       }
+
+      const phaseHeader = document.createElement('div');
+      phaseHeader.style.cssText = 'display:flex; justify-content:space-between; align-items:center; font-size:11px; font-weight:600; color:var(--text-muted); padding-bottom:4px;';
+      phaseHeader.innerHTML = `<span>Active Roadmap Phase: <strong style="color:var(--text);">${phaseTitle}</strong></span><span style="color:#0284c7; font-weight:700;">${phaseDates}</span>`;
+      container.appendChild(phaseHeader);
 
       tasks.forEach(t => {
         const div = document.createElement('div');
@@ -4782,6 +4931,7 @@
         div.innerHTML = `
           <input type="checkbox" class="checkbox">
           <span class="item-text">${t.text}</span>
+          <span class="item-weightage">Lab + Code</span>
         `;
         container.appendChild(div);
       });
@@ -5126,6 +5276,30 @@
         saveState();
         updateUI();
       };
+
+      // Weekend elective course input & save button
+      const weekendCourseInput = document.getElementById('weekendCourseNameInput');
+      if (weekendCourseInput) {
+        weekendCourseInput.oninput = (e) => {
+          state.weekendCourseName = e.target.value;
+          saveState();
+          const courseLabel = document.getElementById('weekendCourseModuleLabel');
+          if (courseLabel) {
+            const cName = state.weekendCourseName.trim();
+            courseLabel.innerText = cName ? `Completed Weekend Course Module (${cName})` : 'Completed Weekend Course Module';
+          }
+        };
+      }
+      const saveWeekendCourseBtn = document.getElementById('saveWeekendCourseBtn');
+      if (saveWeekendCourseBtn) {
+        saveWeekendCourseBtn.onclick = () => {
+          const val = (document.getElementById('weekendCourseNameInput').value || '').trim();
+          state.weekendCourseName = val;
+          saveState();
+          updateUI();
+          alert('✅ Weekend course saved in localStorage!');
+        };
+      }
 
       // Check-in today
       document.getElementById('checkinTodayBtn').onclick = () => {
