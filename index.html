@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Daily Blueprint & Striver's A2Z Sheet Tracker</title>
+  <title>DevBlueprint — Daily Checklist & Weekend Revision</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -648,6 +648,40 @@
       border: 1px solid #fecaca;
     }
 
+    /* Weekend Revision & Filters */
+    .active-filter {
+      background: var(--text) !important;
+      color: #ffffff !important;
+      border-color: var(--text) !important;
+    }
+
+    .revision-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 6px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .revision-item:hover {
+      background: #f8fafc;
+      border-color: var(--border-hover);
+    }
+
+    .revision-item.is-revised {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+    }
+
+    .revision-item.is-revised .striver-problem-link {
+      text-decoration: line-through;
+      color: var(--text-muted) !important;
+    }
+
     /* GitHub Section */
     .form-grid {
       display: grid;
@@ -803,8 +837,8 @@
           <span class="stat-value" id="maxStreakDisplay">0 days</span>
         </div>
         <div class="stat-item">
-          <span class="stat-label">Striver Sums Solved</span>
-          <span class="stat-value" id="striverSolvedCountDisplay">0 / 447</span>
+          <span class="stat-label">Problems Solved</span>
+          <span class="stat-value" id="striverSolvedCountDisplay">0</span>
         </div>
         <div class="stat-item" style="margin-left:auto; text-align:right;">
           <span class="stat-label">Active Real Date</span>
@@ -873,7 +907,7 @@
     <!-- Navigation Tabs -->
     <div class="tabs">
       <button class="tab-item active" data-tab="blueprintTab">Daily Checklist</button>
-      <button class="tab-item" data-tab="striverFullTab">Striver A2Z Full Sheet (~447 Sums)</button>
+      <button class="tab-item" data-tab="weekendRevisionTab">Weekend Revision</button>
       <button class="tab-item" data-tab="githubTab">Commit to GitHub (my_coding)</button>
       <button class="tab-item" data-tab="monthTab">3-Month Skills Roadmap</button>
     </div>
@@ -1086,21 +1120,81 @@
 
     </section>
 
-    <!-- TAB 2: COMPLETE STRIVER A2Z SHEET CHECKLIST (~447 SUMS) -->
-    <section class="tab-content" id="striverFullTab">
-      <div class="card">
-        <div class="striver-full-header">
+    <!-- TAB 2: WEEKEND REVISION (Consolidates problems done during the week Mon-Sun, auto-refreshed every Monday) -->
+    <section class="tab-content" id="weekendRevisionTab">
+      <!-- Revision Header Banner -->
+      <div class="card" style="background: linear-gradient(to right, #f8fafc, #f1f5f9); border-left: 4px solid #16a34a;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
           <div>
-            <div class="block-title">Complete Striver's A2Z DSA Sheet Checklist</div>
-            <div class="block-meta">Every topic and all listed sums (~447 problems) with persistent check-off & GitHub commit integration</div>
+            <div style="font-size:16px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:8px;">
+              <span>Weekend Revision Hub</span>
+              <span class="energy-badge" style="background:#f0fdf4; color:#16a34a; border-color:#bbf7d0;">Mon–Sun Window</span>
+            </div>
+            <div style="font-size:13px; color:var(--text-muted); margin-top:3px;">
+              Curated list of problems solved during this week (including Saturday &amp; Sunday). Refreshes automatically every Monday.
+            </div>
           </div>
-          <div style="display:flex; gap:8px; align-items:center;">
-            <input type="text" class="form-input" id="striverSearchInput" placeholder="Search any sum or topic..." style="width:220px; padding:4px 8px; font-size:12px;">
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <button class="btn btn-sm" id="jumpToCurrentWeekBtn" title="Reset view to current week">🔄 Current Week</button>
+            <button class="btn btn-sm btn-primary" id="markAllRevisedBtn">Mark All Revised</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Week Selector & Summary Stats Card -->
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button class="btn btn-sm" id="prevWeekBtn" title="Previous Week">◀ Prev Week</button>
+            <select class="form-select" id="weekSelect" style="font-weight:600; font-size:13px; padding:5px 10px;"></select>
+            <button class="btn btn-sm" id="nextWeekBtn" title="Next Week">Next Week ▶</button>
+          </div>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <span style="font-size:12px; font-weight:600; color:var(--text-muted); margin-right:4px;">Filter:</span>
+            <button class="btn btn-sm active-filter" id="filterAllSumsBtn" style="padding:3px 9px;">All (<span id="filterAllCount">0</span>)</button>
+            <button class="btn btn-sm" id="filterPendingSumsBtn" style="padding:3px 9px;">To Revise (<span id="filterPendingCount">0</span>)</button>
+            <button class="btn btn-sm" id="filterRevisedSumsBtn" style="padding:3px 9px;">Revised (<span id="filterRevisedCount">0</span>)</button>
           </div>
         </div>
 
-        <div id="striverFullChecklistContainer" style="display:flex; flex-direction:column; gap:12px;">
-          <!-- Populated dynamically with all steps, subtopics and sums -->
+        <!-- Weekly Metrics Row -->
+        <div class="stats-row" style="padding-top:12px; border-top:1px solid var(--border); margin-top:2px;">
+          <div class="stat-item">
+            <span class="stat-label">Week Range</span>
+            <span class="stat-value" style="font-size:14px; font-weight:700;" id="weekRangeLabel">Oct 19 – Oct 25, 2026</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Problems Done This Week</span>
+            <span class="stat-value" id="weeklySolvedCount">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Revision Progress</span>
+            <span class="stat-value" id="weeklyRevisionProgress">0 / 0 (0%)</span>
+          </div>
+          <div class="stat-item" style="margin-left:auto; display:flex; flex-direction:column; justify-content:center; gap:4px; min-width:180px;">
+            <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:600; color:var(--text-muted);">
+              <span>Revision Meter</span>
+              <span id="revisionPercentLabel">0%</span>
+            </div>
+            <div style="width:100%; height:6px; background:#f1f5f9; border-radius:999px; overflow:hidden;">
+              <div id="revisionProgressBar" style="width:0%; height:100%; background:#16a34a; transition:width 0.3s ease;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Problems List Card -->
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:8px; border-bottom:1px solid var(--border); flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="block-title">Weekly Problems for Weekend Revision</span>
+            <span class="energy-badge" id="weeklySumsBadge">0 problems</span>
+          </div>
+          <span style="font-size:11px; color:var(--text-muted);">Click any LeetCode link to re-solve or check off once revised</span>
+        </div>
+
+        <div id="weekendSumsContainer" style="display:flex; flex-direction:column; gap:8px;">
+          <!-- Populated dynamically via JS -->
         </div>
       </div>
     </section>
@@ -4831,8 +4925,12 @@
       dayDsaSubtopic: {}, // { [dayNum]: subtopicTitle }
       striverCompletedSums: {}, // { [sumTitle]: boolean }
       striverSolvedDays: {}, // { [sumTitle]: dayNum } - tracks which day a sum was completed
+      striverSolvedDates: {}, // { [sumTitle]: 'YYYY-MM-DD' }
+      weekendRevisedSums: {}, // { [sumTitleOrKey]: boolean } - tracks problems revised during weekend
+      selectedRevisionMondayStr: null, // null defaults to current week's Monday (auto-refreshes every Monday)
+      weekendRevisionFilter: 'all', // 'all' | 'pending' | 'revised'
       tasks: {}, // { [dayNum]: { [taskId]: boolean } }
-      problems: [], // [ { id, day, dateStr, title, fileName, topic, commitMsg, notes, githubUrl } ]
+      problems: [], // [ { id, day, dateStr, isoDate, title, fileName, topic, commitMsg, notes, githubUrl } ]
       github: {
         username: '',
         repo: 'my_coding',
@@ -4860,6 +4958,11 @@
       return `${days[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
     }
 
+    function formatDateShort(d) {
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return `${months[d.getMonth()]} ${d.getDate()}`;
+    }
+
     function getDateForDay(dayNum) {
       const start = parseDate(state.startDateStr);
       const d = new Date(start);
@@ -4873,6 +4976,26 @@
       return dayOfWeek === 0 || dayOfWeek === 6;
     }
 
+    // Returns Monday string 'YYYY-MM-DD' of the current week (auto-refreshes every Monday)
+    function getCurrentWeekMonday() {
+      const today = parseDate(getTodayDateStr());
+      const day = today.getDay(); // 0 is Sun, 1 is Mon, ..., 6 is Sat
+      const diffToMon = day === 0 ? -6 : 1 - day;
+      const mon = new Date(today);
+      mon.setDate(today.getDate() + diffToMon);
+      return `${mon.getFullYear()}-${String(mon.getMonth() + 1).padStart(2, '0')}-${String(mon.getDate()).padStart(2, '0')}`;
+    }
+
+    // Returns Monday 00:00:00 and Sunday 23:59:59 (covers Monday through Sunday inclusive)
+    function getWeekBoundsForMonday(mondayStr) {
+      const mon = parseDate(mondayStr);
+      mon.setHours(0, 0, 0, 0);
+      const sun = new Date(mon);
+      sun.setDate(mon.getDate() + 6);
+      sun.setHours(23, 59, 59, 999);
+      return { mon, sun };
+    }
+
     function loadState() {
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
@@ -4884,9 +5007,10 @@
         console.error(e);
       }
 
-      if (!state.weekendCourseName) {
-        state.weekendCourseName = 'DeepLearning.AI MCP';
-      }
+      if (!state.weekendCourseName) state.weekendCourseName = 'DeepLearning.AI MCP';
+      if (!state.striverSolvedDates) state.striverSolvedDates = {};
+      if (!state.weekendRevisedSums) state.weekendRevisedSums = {};
+      if (!state.weekendRevisionFilter) state.weekendRevisionFilter = 'all';
 
       if (!state.startDateStr) {
         state.startDateStr = getTodayDateStr();
@@ -5067,7 +5191,99 @@
     }
 
     /* =====================================================================
-       STRIVER'S A2Z DROPDOWNS & CHECKLIST INITIALIZATION
+       STRIVER'S A2Z LOOKUP & PROBLEM DETAILS HELPER
+       ===================================================================== */
+    function findStriverSum(titleOrClean) {
+      if (!titleOrClean) return null;
+      const tLower = titleOrClean.toLowerCase().trim();
+      const numMatch = titleOrClean.match(/^#?(\d+)\s*[-:.)]?\s*(.*)$/);
+      const num = numMatch ? parseInt(numMatch[1], 10) : null;
+      const rawClean = (numMatch && numMatch[2] ? numMatch[2].trim() : titleOrClean.trim());
+      const cleanAlpha = rawClean.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+      // Pass 1: Exact title match or alpha-clean match
+      for (const stepObj of STRIVER_A2Z_FULL_SHEET) {
+        for (const sub of stepObj.subtopics) {
+          for (const s of sub.sums) {
+            const sTitle = typeof s === 'string' ? s : s.title;
+            const sLower = sTitle.toLowerCase().trim();
+            const sCleanAlpha = sTitle.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+            if (sLower === tLower || sLower === rawClean.toLowerCase() || (cleanAlpha && sCleanAlpha === cleanAlpha)) {
+              return { sum: s, subtopic: sub.title, step: stepObj.step };
+            }
+          }
+        }
+      }
+
+      // Pass 2: LeetCode numeric ID match
+      if (num) {
+        for (const stepObj of STRIVER_A2Z_FULL_SHEET) {
+          for (const sub of stepObj.subtopics) {
+            for (const s of sub.sums) {
+              const sId = (typeof s === 'object' && s.id) ? s.id : null;
+              if (sId === num) {
+                return { sum: s, subtopic: sub.title, step: stepObj.step };
+              }
+            }
+          }
+        }
+      }
+
+      // Pass 3: Link slug match
+      if (rawClean) {
+        const slug = rawClean.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        for (const stepObj of STRIVER_A2Z_FULL_SHEET) {
+          for (const sub of stepObj.subtopics) {
+            for (const s of sub.sums) {
+              const sLink = (typeof s === 'object' && s.link) ? s.link.toLowerCase() : '';
+              if (sLink.includes('/problems/' + slug + '/')) {
+                return { sum: s, subtopic: sub.title, step: stepObj.step };
+              }
+            }
+          }
+        }
+      }
+
+      return null;
+    }
+
+    function getProblemDetails(title, customSubtopic = '') {
+      const match = findStriverSum(title);
+      if (match && typeof match.sum === 'object') {
+        const s = match.sum;
+        return {
+          title: s.title,
+          difficulty: s.difficulty || 'Medium',
+          link: s.link || `https://leetcode.com/problemset/all/?search=${encodeURIComponent(s.title)}`,
+          id: s.id || null,
+          video: s.video || `https://www.youtube.com/results?search_query=take+u+forward+${encodeURIComponent(s.title)}`,
+          subtopic: match.subtopic,
+          step: match.step
+        };
+      }
+
+      let lcNum = null;
+      let cleanTitle = title;
+      const numMatch = title.match(/^#?(\d+)\s*[-:.)]?\s*(.*)$/);
+      if (numMatch) {
+        lcNum = parseInt(numMatch[1], 10);
+        cleanTitle = numMatch[2] ? numMatch[2].trim() : title;
+      }
+
+      return {
+        title: cleanTitle,
+        difficulty: 'Medium',
+        link: lcNum ? `https://leetcode.com/problemset/all/?search=${lcNum}` : `https://leetcode.com/problemset/all/?search=${encodeURIComponent(cleanTitle)}`,
+        id: lcNum,
+        video: `https://www.youtube.com/results?search_query=take+u+forward+${encodeURIComponent(cleanTitle)}`,
+        subtopic: customSubtopic || 'Problem Solving',
+        step: 'Practice'
+      };
+    }
+
+    /* =====================================================================
+       STRIVER'S A2Z DROPDOWNS & DAILY CHECKLIST SUMS
        ===================================================================== */
     function populateStriverComponents() {
       const subtopicSelect = document.getElementById('dailyStriverSubtopicSelect');
@@ -5104,9 +5320,6 @@
         saveState();
         renderDailySubtopicSums(subtopicSelect.value);
       };
-
-      // Populate Full Striver Checklist Tab
-      renderFullStriverSheet();
     }
 
     function renderDailySubtopicSums(subtopicTitle) {
@@ -5177,14 +5390,20 @@
           state.striverCompletedSums[sumTitle] = cb.checked;
           if (cb.checked) {
             if (!state.striverSolvedDays) state.striverSolvedDays = {};
+            if (!state.striverSolvedDates) state.striverSolvedDates = {};
             state.striverSolvedDays[sumTitle] = state.selectedDay;
+            state.striverSolvedDates[sumTitle] = getTodayDateStr();
+            // Automatically mark tick mark for Afternoon DSA problem-solving in Daily Checklist!
+            if (!state.tasks[state.selectedDay]) state.tasks[state.selectedDay] = {};
+            state.tasks[state.selectedDay]['dsa_paper_logic'] = true;
           } else {
             if (state.striverSolvedDays) delete state.striverSolvedDays[sumTitle];
+            if (state.striverSolvedDates) delete state.striverSolvedDates[sumTitle];
           }
           saveState();
           renderDailySubtopicSums(subtopicTitle);
-          renderFullStriverSheet();
           updateUI();
+          renderWeekendRevision();
         };
 
         const commitBtn = item.querySelector('button');
@@ -5198,110 +5417,6 @@
       if (badge) {
         badge.innerText = `${doneCount} of ${foundSub.sums.length} solved`;
       }
-    }
-
-    function renderFullStriverSheet(searchQuery = '') {
-      const container = document.getElementById('striverFullChecklistContainer');
-      container.innerHTML = '';
-
-      const query = searchQuery.toLowerCase().trim();
-
-      STRIVER_A2Z_FULL_SHEET.forEach(stepObj => {
-        const stepBox = document.createElement('div');
-        stepBox.className = 'striver-step-box';
-
-        let totalSumsInStep = 0;
-        let solvedInStep = 0;
-        let stepMatchingHTML = '';
-
-        stepObj.subtopics.forEach(sub => {
-          const matchingSums = sub.sums.filter(s => {
-            const title = typeof s === 'string' ? s : s.title;
-            const diff = typeof s === 'object' ? s.difficulty : '';
-            const numStr = (typeof s === 'object' && s.id) ? s.id.toString() : '';
-            const hashNumStr = (typeof s === 'object' && s.id) ? '#' + s.id : '';
-            return !query || 
-                   title.toLowerCase().includes(query) || 
-                   sub.title.toLowerCase().includes(query) || 
-                   (diff && diff.toLowerCase().includes(query)) ||
-                   numStr === query ||
-                   hashNumStr === query ||
-                   numStr.includes(query);
-          });
-          if (matchingSums.length === 0) return;
-
-          totalSumsInStep += sub.sums.length;
-          let subHTML = `<div class="striver-subtopic-section"><div class="striver-subtopic-heading">${escapeHtml(sub.title)}</div><div style="display:flex; flex-direction:column; gap:4px;">`;
-
-          matchingSums.forEach(sumItem => {
-            const sumTitle = typeof sumItem === 'string' ? sumItem : sumItem.title;
-            const diff = (typeof sumItem === 'object' && sumItem.difficulty) ? sumItem.difficulty : 'Medium';
-            const link = (typeof sumItem === 'object' && sumItem.link) ? sumItem.link : `https://leetcode.com/problemset/all/?search=${encodeURIComponent(sumTitle)}`;
-            const lcNum = (typeof sumItem === 'object' && sumItem.id) ? sumItem.id : null;
-            const isDone = !!state.striverCompletedSums[sumTitle];
-            if (isDone) solvedInStep++;
-
-            const video = (typeof sumItem === 'object' && sumItem.video) ? sumItem.video : `https://www.youtube.com/results?search_query=take+u+forward+${encodeURIComponent(sumTitle)}`;
-            const diffClass = diff === 'Easy' ? 'diff-easy' : (diff === 'Medium' ? 'diff-medium' : 'diff-hard');
-            const numBadgeHTML = lcNum ? `<span class="lc-badge" title="LeetCode Problem #${lcNum}">#${lcNum}</span>` : '';
-            const videoBtnHTML = `
-              <a href="${video}" target="_blank" rel="noopener noreferrer" class="striver-video-btn" onclick="event.stopPropagation()" title="Watch Video Solution: ${escapeHtml(sumTitle)}">
-                <svg viewBox="0 0 24 24"><path d="M10 8.64L15.27 12 10 15.36V8.64M21.5 6.54a2.7 2.7 0 0 0-1.9-1.9C17.92 4.1 12 4.1 12 4.1s-5.92 0-7.6.54a2.7 2.7 0 0 0-1.9 1.9C2 8.22 2 12 2 12s0 3.78.5 5.46a2.7 2.7 0 0 0 1.9 1.9c1.68.54 7.6.54 7.6.54s5.92 0 7.6-.54a2.7 2.7 0 0 0 1.9-1.9c.5-1.68.5-5.46.5-5.46s0-3.78-.5-5.46z"/></svg>
-                <span>Video</span>
-              </a>
-            `;
-
-            subHTML += `
-              <div class="striver-sum-item">
-                <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:0;">
-                  <input type="checkbox" class="checkbox striver-cb" data-sum="${escapeHtml(sumTitle)}" ${isDone ? 'checked' : ''} style="width:14px; height:14px; cursor:pointer; flex-shrink:0;">
-                  ${numBadgeHTML}
-                  <a href="${link}" target="_blank" rel="noopener noreferrer" class="striver-problem-link" style="flex:1; font-weight:500; font-size:12px; text-decoration:${isDone ? 'line-through' : 'none'}; color:${isDone ? 'var(--text-muted)' : 'var(--text)'}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="Open problem on LeetCode: ${escapeHtml(sumTitle)}">
-                    ${escapeHtml(sumTitle)}
-                    <span class="ext-icon" style="font-size:10px; color:var(--text-muted); margin-left:3px;">↗</span>
-                  </a>
-                  ${videoBtnHTML}
-                  <span class="diff-badge ${diffClass}">${diff}</span>
-                </div>
-                <button class="btn btn-sm" style="padding:1px 7px; font-size:11px; margin-left:8px; flex-shrink:0;" onclick="loadProblemIntoGitHubForm('${escapeHtml(sumTitle)}', '${escapeHtml(sub.title)}', ${lcNum || 'null'})">Commit ➔</button>
-              </div>
-            `;
-          });
-
-          subHTML += `</div></div>`;
-          stepMatchingHTML += subHTML;
-        });
-
-        if (!stepMatchingHTML) return;
-
-        stepBox.innerHTML = `
-          <div class="striver-step-title">
-            <span>${escapeHtml(stepObj.step)}</span>
-            <span style="font-size:11px; font-weight:600; color:var(--text-muted);">${solvedInStep} / ${totalSumsInStep} Done</span>
-          </div>
-          <div>${stepMatchingHTML}</div>
-        `;
-
-        container.appendChild(stepBox);
-      });
-
-      // Bind all checkboxes
-      container.querySelectorAll('.striver-cb').forEach(cb => {
-        cb.onchange = () => {
-          const sumName = cb.getAttribute('data-sum');
-          state.striverCompletedSums[sumName] = cb.checked;
-          if (cb.checked) {
-            if (!state.striverSolvedDays) state.striverSolvedDays = {};
-            state.striverSolvedDays[sumName] = state.selectedDay;
-          } else {
-            if (state.striverSolvedDays) delete state.striverSolvedDays[sumName];
-          }
-          saveState();
-          updateUI();
-          const currentDailySub = state.dayDsaSubtopic[state.selectedDay] || STRIVER_A2Z_FULL_SHEET[0].subtopics[0].title;
-          renderDailySubtopicSums(currentDailySub);
-        };
-      });
     }
 
     function loadProblemIntoGitHubForm(sumTitle, subtopicTitle, lcNum = null) {
@@ -5331,6 +5446,283 @@
     }
 
     /* =====================================================================
+       WEEKEND REVISION ENGINE (MON–SUN CYCLE, AUTO-REFRESHES EVERY MONDAY)
+       ===================================================================== */
+    function populateWeekSelect() {
+      const select = document.getElementById('weekSelect');
+      if (!select) return;
+      select.innerHTML = '';
+
+      const currentMonStr = getCurrentWeekMonday();
+      const start = parseDate(state.startDateStr);
+      const startDay = start.getDay();
+      const diffToMon = startDay === 0 ? -6 : 1 - startDay;
+      const baseMonday = new Date(start);
+      baseMonday.setDate(start.getDate() + diffToMon);
+
+      const totalWeeks = 14;
+      for (let w = 0; w < totalWeeks; w++) {
+        const mon = new Date(baseMonday);
+        mon.setDate(baseMonday.getDate() + w * 7);
+        const sun = new Date(mon);
+        sun.setDate(mon.getDate() + 6);
+
+        const monStr = `${mon.getFullYear()}-${String(mon.getMonth() + 1).padStart(2, '0')}-${String(mon.getDate()).padStart(2, '0')}`;
+        const isCurrent = (monStr === currentMonStr);
+
+        const opt = document.createElement('option');
+        opt.value = monStr;
+        opt.innerText = `Week ${w + 1}: ${formatDateShort(mon)} – ${formatDateShort(sun)}, ${sun.getFullYear()}${isCurrent ? ' (Current Week)' : ''}`;
+        select.appendChild(opt);
+      }
+
+      const activeMonStr = state.selectedRevisionMondayStr || currentMonStr;
+      select.value = activeMonStr;
+
+      select.onchange = (e) => {
+        state.selectedRevisionMondayStr = e.target.value;
+        saveState();
+        renderWeekendRevision();
+      };
+    }
+
+    function getWeeklyProblemsForSelectedWeek() {
+      const currentMonStr = getCurrentWeekMonday();
+      const activeMonStr = state.selectedRevisionMondayStr || currentMonStr;
+      const { mon, sun } = getWeekBoundsForMonday(activeMonStr);
+
+      const list = [];
+      const seenKeys = new Set();
+
+      // 1. Problems logged / committed via GitHub or locally
+      state.problems.forEach(p => {
+        const dayNum = p.day || 1;
+        const pDate = p.isoDate ? parseDate(p.isoDate) : getDateForDay(dayNum);
+        if (pDate >= mon && pDate <= sun) {
+          const details = getProblemDetails(p.title, p.topic);
+          const key = (details.id ? `lc_${details.id}` : details.title.toLowerCase().trim());
+          if (!seenKeys.has(key)) {
+            seenKeys.add(key);
+            list.push({
+              key,
+              title: details.title,
+              id: details.id,
+              difficulty: details.difficulty,
+              link: details.link,
+              video: details.video,
+              subtopic: p.topic || details.subtopic,
+              day: dayNum,
+              date: pDate,
+              githubUrl: p.githubUrl || null,
+              notes: p.notes || null,
+              fileName: p.fileName || null
+            });
+          }
+        }
+      });
+
+      // 2. Sums checked off in Daily Checklist
+      Object.entries(state.striverCompletedSums || {}).forEach(([title, isDone]) => {
+        if (!isDone) return;
+        const details = getProblemDetails(title);
+        const key = (details.id ? `lc_${details.id}` : details.title.toLowerCase().trim());
+        if (seenKeys.has(key)) return;
+
+        const dayNum = state.striverSolvedDays ? (state.striverSolvedDays[title] || state.striverSolvedDays[details.title]) : null;
+        const dateStr = state.striverSolvedDates ? (state.striverSolvedDates[title] || state.striverSolvedDates[details.title]) : null;
+        const pDate = dateStr ? parseDate(dateStr) : (dayNum ? getDateForDay(dayNum) : null);
+
+        if (pDate && pDate >= mon && pDate <= sun) {
+          seenKeys.add(key);
+          list.push({
+            key,
+            title: details.title,
+            id: details.id,
+            difficulty: details.difficulty,
+            link: details.link,
+            video: details.video,
+            subtopic: details.subtopic,
+            day: dayNum || state.selectedDay,
+            date: pDate,
+            githubUrl: null,
+            notes: null,
+            fileName: null
+          });
+        }
+      });
+
+      // Sort chronologically by date
+      list.sort((a, b) => a.date - b.date);
+      return list;
+    }
+
+    function renderWeekendRevision() {
+      const currentMonStr = getCurrentWeekMonday();
+      const activeMonStr = state.selectedRevisionMondayStr || currentMonStr;
+      const { mon, sun } = getWeekBoundsForMonday(activeMonStr);
+
+      const weekSelect = document.getElementById('weekSelect');
+      if (weekSelect && weekSelect.value !== activeMonStr) {
+        weekSelect.value = activeMonStr;
+      }
+
+      // Range header label
+      const rangeLabel = document.getElementById('weekRangeLabel');
+      if (rangeLabel) {
+        rangeLabel.innerText = `${formatDateShort(mon)} – ${formatDateShort(sun)}, ${sun.getFullYear()}${activeMonStr === currentMonStr ? ' (Current Week)' : ''}`;
+      }
+
+      const allProblems = getWeeklyProblemsForSelectedWeek();
+      const totalCount = allProblems.length;
+
+      let revisedCount = 0;
+      allProblems.forEach(p => {
+        if (state.weekendRevisedSums && (state.weekendRevisedSums[p.key] || state.weekendRevisedSums[p.title])) {
+          revisedCount++;
+        }
+      });
+      const pendingCount = totalCount - revisedCount;
+      const percent = totalCount > 0 ? Math.round((revisedCount / totalCount) * 100) : 0;
+
+      // Update counters & meter
+      const weeklySolvedCount = document.getElementById('weeklySolvedCount');
+      if (weeklySolvedCount) weeklySolvedCount.innerText = totalCount;
+
+      const weeklyRevisionProgress = document.getElementById('weeklyRevisionProgress');
+      if (weeklyRevisionProgress) weeklyRevisionProgress.innerText = `${revisedCount} / ${totalCount} (${percent}%)`;
+
+      const revisionPercentLabel = document.getElementById('revisionPercentLabel');
+      if (revisionPercentLabel) revisionPercentLabel.innerText = `${percent}%`;
+
+      const revisionProgressBar = document.getElementById('revisionProgressBar');
+      if (revisionProgressBar) revisionProgressBar.style.width = `${percent}%`;
+
+      const filterAllCount = document.getElementById('filterAllCount');
+      if (filterAllCount) filterAllCount.innerText = totalCount;
+
+      const filterPendingCount = document.getElementById('filterPendingCount');
+      if (filterPendingCount) filterPendingCount.innerText = pendingCount;
+
+      const filterRevisedCount = document.getElementById('filterRevisedCount');
+      if (filterRevisedCount) filterRevisedCount.innerText = revisedCount;
+
+      const badge = document.getElementById('weeklySumsBadge');
+      if (badge) badge.innerText = `${totalCount} problem${totalCount === 1 ? '' : 's'}`;
+
+      // Update filter button styling
+      ['filterAllSumsBtn', 'filterPendingSumsBtn', 'filterRevisedSumsBtn'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.classList.remove('active-filter');
+      });
+      if (state.weekendRevisionFilter === 'pending') {
+        const btn = document.getElementById('filterPendingSumsBtn');
+        if (btn) btn.classList.add('active-filter');
+      } else if (state.weekendRevisionFilter === 'revised') {
+        const btn = document.getElementById('filterRevisedSumsBtn');
+        if (btn) btn.classList.add('active-filter');
+      } else {
+        const btn = document.getElementById('filterAllSumsBtn');
+        if (btn) btn.classList.add('active-filter');
+      }
+
+      // Filter problem list
+      const filtered = allProblems.filter(p => {
+        const isRev = !!(state.weekendRevisedSums && (state.weekendRevisedSums[p.key] || state.weekendRevisedSums[p.title]));
+        if (state.weekendRevisionFilter === 'pending') return !isRev;
+        if (state.weekendRevisionFilter === 'revised') return isRev;
+        return true;
+      });
+
+      const container = document.getElementById('weekendSumsContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      if (filtered.length === 0) {
+        if (totalCount === 0) {
+          container.innerHTML = `
+            <div style="text-align:center; padding:36px 16px; background:#f8fafc; border:1px dashed var(--border); border-radius:8px;">
+              <div style="font-size:26px; margin-bottom:8px;">📋</div>
+              <div style="font-weight:700; font-size:14px; color:var(--text); margin-bottom:4px;">No problems solved yet for this week</div>
+              <div style="font-size:12px; color:var(--text-muted); max-width:480px; margin:0 auto 14px auto; line-height:1.6;">
+                Problems solved during this week (Monday through Sunday, including Saturday &amp; Sunday) will automatically appear here for your weekend revision. This list refreshes automatically every Monday.
+              </div>
+              <button class="btn btn-sm btn-primary" onclick="document.querySelector('[data-tab=\\'blueprintTab\\']').click()">Go to Daily Checklist ➔</button>
+            </div>
+          `;
+        } else {
+          container.innerHTML = `
+            <div style="text-align:center; padding:24px 16px; background:#f8fafc; border:1px solid var(--border); border-radius:6px; color:var(--text-muted); font-size:13px;">
+              No problems match the <strong>${state.weekendRevisionFilter === 'pending' ? 'To Revise' : 'Revised'}</strong> filter.
+            </div>
+          `;
+        }
+        return;
+      }
+
+      filtered.forEach(p => {
+        const isRevised = !!(state.weekendRevisedSums && (state.weekendRevisedSums[p.key] || state.weekendRevisedSums[p.title]));
+        const diffClass = p.difficulty === 'Easy' ? 'diff-easy' : (p.difficulty === 'Medium' ? 'diff-medium' : 'diff-hard');
+        const numBadgeHTML = p.id ? `<span class="lc-badge" title="LeetCode Problem #${p.id}">#${p.id}</span>` : '';
+        const videoBtnHTML = `
+          <a href="${p.video}" target="_blank" rel="noopener noreferrer" class="striver-video-btn" onclick="event.stopPropagation()" title="Watch Video Solution: ${escapeHtml(p.title)}">
+            <svg viewBox="0 0 24 24"><path d="M10 8.64L15.27 12 10 15.36V8.64M21.5 6.54a2.7 2.7 0 0 0-1.9-1.9C17.92 4.1 12 4.1 12 4.1s-5.92 0-7.6.54a2.7 2.7 0 0 0-1.9 1.9C2 8.22 2 12 2 12s0 3.78.5 5.46a2.7 2.7 0 0 0 1.9 1.9c1.68.54 7.6.54 7.6.54s5.92 0 7.6-.54a2.7 2.7 0 0 0 1.9-1.9c.5-1.68.5-5.46.5-5.46s0-3.78-.5-5.46z"/></svg>
+            <span>Video</span>
+          </a>
+        `;
+
+        const item = document.createElement('div');
+        item.className = `revision-item ${isRevised ? 'is-revised' : ''}`;
+
+        item.innerHTML = `
+          <div style="display:flex; align-items:flex-start; gap:10px; flex:1; min-width:0;">
+            <input type="checkbox" class="checkbox" ${isRevised ? 'checked' : ''} style="margin-top:3px; width:16px; height:16px; cursor:pointer; flex-shrink:0;" title="Check off once revised this weekend">
+            <div style="display:flex; flex-direction:column; gap:4px; flex:1; min-width:0;">
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                ${numBadgeHTML}
+                <a href="${p.link}" target="_blank" rel="noopener noreferrer" class="striver-problem-link" style="font-weight:600; font-size:13px;" title="Open problem on LeetCode: ${escapeHtml(p.title)}">
+                  ${escapeHtml(p.title)}
+                  <span class="ext-icon" style="font-size:10px; color:var(--text-muted); margin-left:3px;">↗</span>
+                </a>
+                ${videoBtnHTML}
+                <span class="diff-badge ${diffClass}">${p.difficulty}</span>
+                <span style="font-size:11px; color:var(--accent); font-weight:600; background:#f0f9ff; padding:1px 7px; border-radius:4px; border:1px solid #bae6fd;">
+                  ${escapeHtml(p.subtopic)}
+                </span>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px; font-size:11px; color:var(--text-muted); flex-wrap:wrap;">
+                <span>📅 Solved on <strong>Day ${p.day}</strong> (${formatDateFormatted(p.date)})</span>
+                ${isRevised ? `<span style="color:#16a34a; font-weight:600;">✓ Revised for Weekend</span>` : `<span style="color:#f59e0b; font-weight:600;">Pending Revision</span>`}
+              </div>
+              ${p.notes ? `
+                <details style="margin-top:4px;">
+                  <summary style="font-size:11px; color:var(--accent); cursor:pointer; font-weight:500;">View Paper Logic / Solution Notes</summary>
+                  <div class="prob-desc" style="margin-top:4px;">${escapeHtml(p.notes)}</div>
+                </details>
+              ` : ''}
+            </div>
+          </div>
+
+          <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
+            ${p.githubUrl 
+              ? `<a href="${p.githubUrl}" target="_blank" class="btn btn-sm" style="color:var(--accent); text-decoration:none;">Repo ↗</a>` 
+              : `<button class="btn btn-sm" title="Push problem to my_coding repository" onclick="loadProblemIntoGitHubForm('${escapeHtml(p.title)}', '${escapeHtml(p.subtopic)}', ${p.id || 'null'})">Commit ➔</button>`}
+          </div>
+        `;
+
+        const cb = item.querySelector('.checkbox');
+        cb.onchange = () => {
+          if (!state.weekendRevisedSums) state.weekendRevisedSums = {};
+          state.weekendRevisedSums[p.key] = cb.checked;
+          state.weekendRevisedSums[p.title] = cb.checked;
+          saveState();
+          renderWeekendRevision();
+        };
+
+        container.appendChild(item);
+      });
+    }
+
+    /* =====================================================================
        HEADER & ROUTINE VIEW UPDATE
        ===================================================================== */
     function updateUI() {
@@ -5338,7 +5730,7 @@
       document.getElementById('currentStreakDisplay').innerText = `${stats.currentStreak} days`;
       document.getElementById('totalDaysDisplay').innerText = `${stats.totalDays} days`;
       document.getElementById('maxStreakDisplay').innerText = `${stats.maxStreak} days`;
-      document.getElementById('striverSolvedCountDisplay').innerText = `${stats.striverSolvedCount} / 447`;
+      document.getElementById('striverSolvedCountDisplay').innerText = `${stats.striverSolvedCount}`;
 
       const dayNum = state.selectedDay;
       const curDate = getDateForDay(dayNum);
@@ -5386,6 +5778,7 @@
       renderEveningTasks(dayNum);
       syncCheckboxes(dayNum);
       renderHeatmap();
+      renderWeekendRevision();
     }
 
     function renderEveningTasks(dayNum) {
@@ -5500,7 +5893,7 @@
     }
 
     /* =====================================================================
-       GITHUB REPO SYNC (my_coding)
+       GITHUB REPO SYNC & AUTOMATIC CHECKLIST INTEGRATION
        ===================================================================== */
     function setupGitHub() {
       document.getElementById('ghUser').value = state.github.username || '';
@@ -5591,6 +5984,8 @@
       const fileContent = `# ${title}\n\n- **Striver's A2Z Topic:** ${topic}\n- **Date:** ${formatDateFormatted(curDate)}\n- **Blueprint Day:** Day ${state.selectedDay}\n\n## Description & Notes\n\n${notes}\n`;
 
       let ghUrl = null;
+      let commitSucceeded = false;
+
       if (pushToGithub) {
         const { username, repo, branch, token } = state.github;
         if (!username || !token) {
@@ -5643,23 +6038,58 @@
 
           const resData = await res.json();
           ghUrl = resData.content ? resData.content.html_url : `https://github.com/${username}/${repo}/blob/${branch}/${fileName}`;
-          showStatus(`✅ Successfully committed ${fileName} to ${repo}!`, 'green');
+          commitSucceeded = true;
+          showStatus(`✅ Successfully committed ${fileName} to ${repo}! Automatically marked as done (✓) in Daily Checklist.`, 'green');
         } catch (err) {
-          showStatus(`❌ GitHub Error: ${err.message}. Saved locally.`, 'red');
+          showStatus(`❌ GitHub Error: ${err.message}. Saved locally & marked in Daily Checklist.`, 'red');
         }
       } else {
-        showStatus(`💾 Saved locally in browser tracker.`, 'green');
+        showStatus(`💾 Saved locally! Automatically marked as done (✓) in Daily Checklist.`, 'green');
       }
 
-      // Mark this sum as completed in Striver checklist automatically
+      // ===================================================================
+      // AUTOMATIC CHECKLIST & STRIVER TICK MARK INTEGRATION
+      // ===================================================================
+      // 1. Mark problem as completed in Striver sums tracker
+      const matched = findStriverSum(title);
+      if (matched && typeof matched.sum === 'object') {
+        const canonicalTitle = matched.sum.title;
+        state.striverCompletedSums[canonicalTitle] = true;
+        if (!state.striverSolvedDays) state.striverSolvedDays = {};
+        if (!state.striverSolvedDates) state.striverSolvedDates = {};
+        state.striverSolvedDays[canonicalTitle] = state.selectedDay;
+        state.striverSolvedDates[canonicalTitle] = getTodayDateStr();
+      }
       state.striverCompletedSums[title] = true;
       if (!state.striverSolvedDays) state.striverSolvedDays = {};
+      if (!state.striverSolvedDates) state.striverSolvedDates = {};
       state.striverSolvedDays[title] = state.selectedDay;
+      state.striverSolvedDates[title] = getTodayDateStr();
+
+      // 2. Mark tick mark in the Daily Checklist tasks for today!
+      if (!state.tasks[state.selectedDay]) state.tasks[state.selectedDay] = {};
+
+      // Automatically tick "Block 2: Afternoon Problem-Solving — DSA in C++"
+      state.tasks[state.selectedDay]['dsa_paper_logic'] = true;
+
+      // Automatically tick commit task for the day in Daily Checklist
+      if (isDayWeekend(state.selectedDay)) {
+        state.tasks[state.selectedDay]['w_lineupx_commit'] = true;
+      } else {
+        if (state.selectedDay <= 27) {
+          state.tasks[state.selectedDay]['p1_sql_commit'] = true;
+        } else if (state.selectedDay <= 49) {
+          state.tasks[state.selectedDay]['p2_test_commit'] = true;
+        } else {
+          state.tasks[state.selectedDay]['p3_review_commit'] = true;
+        }
+      }
 
       const problemRecord = {
         id: 'p_' + Date.now(),
         day: state.selectedDay,
         dateStr: formatDateFormatted(curDate),
+        isoDate: getTodayDateStr(),
         title,
         fileName,
         topic,
@@ -5671,7 +6101,7 @@
       state.problems.unshift(problemRecord);
       saveState();
 
-      // Clear input
+      // Clear input form
       document.getElementById('probTitleInput').value = '';
       document.getElementById('probFileInput').value = '';
       document.getElementById('probCommitMsgInput').value = '';
@@ -5679,6 +6109,7 @@
 
       updateUI();
       renderProblemList();
+      renderWeekendRevision();
     }
 
     function showStatus(msg, color) {
@@ -5717,15 +6148,15 @@
         item.innerHTML = `
           <div class="prob-header">
             <div>
-              <span class="prob-name">${p.title}</span>
-              <span style="font-size:11px; color:var(--text-muted); margin-left:6px;">(${p.topic} • Day ${p.day})</span>
+              <span class="prob-name">${escapeHtml(p.title)}</span>
+              <span style="font-size:11px; color:var(--text-muted); margin-left:6px;">(${escapeHtml(p.topic)} • Day ${p.day})</span>
             </div>
             <div style="display:flex; gap:8px; align-items:center;">
               ${p.githubUrl ? `<a href="${p.githubUrl}" target="_blank" class="github-link">View in my_coding ↗</a>` : `<span style="font-size:11px; color:var(--text-muted);">Local</span>`}
               <button class="btn btn-sm" style="padding:1px 5px; font-size:11px; color:#ef4444;" onclick="deleteProb('${p.id}')">✕</button>
             </div>
           </div>
-          <div style="font-size:11px; color:var(--text-muted); font-family:var(--mono);">File: ${p.fileName} | Commit: "${p.commitMsg || p.title}"</div>
+          <div style="font-size:11px; color:var(--text-muted); font-family:var(--mono);">File: ${escapeHtml(p.fileName)} | Commit: "${escapeHtml(p.commitMsg || p.title)}"</div>
           ${p.notes ? `<div class="prob-desc">${escapeHtml(p.notes)}</div>` : ''}
         `;
         container.appendChild(item);
@@ -5738,16 +6169,18 @@
         saveState();
         updateUI();
         renderProblemList();
+        renderWeekendRevision();
       }
     }
 
     function escapeHtml(t) {
+      if (t == null) return '';
       const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-      return t.replace(/[&<>"']/g, m => map[m]);
+      return String(t).replace(/[&<>"']/g, m => map[m]);
     }
 
     /* =====================================================================
-       GENERAL ACTIONS
+       GENERAL ACTIONS & EVENT BINDINGS
        ===================================================================== */
     function setupActions() {
       // Sync Today as Day 1
@@ -5756,18 +6189,94 @@
           state.startDateStr = getTodayDateStr();
           state.selectedDay = 1;
           state.isWeekendView = isDayWeekend(1);
+          state.selectedRevisionMondayStr = null;
           saveState();
           populateDaySelect();
+          populateWeekSelect();
           updateUI();
           alert('✅ Re-aligned: Today is now Day 1!');
         }
       };
 
-      // Search in full Striver sheet
-      const searchInput = document.getElementById('striverSearchInput');
-      if (searchInput) {
-        searchInput.oninput = (e) => {
-          renderFullStriverSheet(e.target.value);
+      // Weekend Revision Controls
+      const jumpToCurrentWeekBtn = document.getElementById('jumpToCurrentWeekBtn');
+      if (jumpToCurrentWeekBtn) {
+        jumpToCurrentWeekBtn.onclick = () => {
+          state.selectedRevisionMondayStr = null;
+          saveState();
+          populateWeekSelect();
+          renderWeekendRevision();
+        };
+      }
+
+      const prevWeekBtn = document.getElementById('prevWeekBtn');
+      if (prevWeekBtn) {
+        prevWeekBtn.onclick = () => {
+          const select = document.getElementById('weekSelect');
+          if (select && select.selectedIndex > 0) {
+            select.selectedIndex--;
+            state.selectedRevisionMondayStr = select.value;
+            saveState();
+            renderWeekendRevision();
+          }
+        };
+      }
+
+      const nextWeekBtn = document.getElementById('nextWeekBtn');
+      if (nextWeekBtn) {
+        nextWeekBtn.onclick = () => {
+          const select = document.getElementById('weekSelect');
+          if (select && select.selectedIndex < select.options.length - 1) {
+            select.selectedIndex++;
+            state.selectedRevisionMondayStr = select.value;
+            saveState();
+            renderWeekendRevision();
+          }
+        };
+      }
+
+      const filterAllSumsBtn = document.getElementById('filterAllSumsBtn');
+      if (filterAllSumsBtn) {
+        filterAllSumsBtn.onclick = () => {
+          state.weekendRevisionFilter = 'all';
+          saveState();
+          renderWeekendRevision();
+        };
+      }
+
+      const filterPendingSumsBtn = document.getElementById('filterPendingSumsBtn');
+      if (filterPendingSumsBtn) {
+        filterPendingSumsBtn.onclick = () => {
+          state.weekendRevisionFilter = 'pending';
+          saveState();
+          renderWeekendRevision();
+        };
+      }
+
+      const filterRevisedSumsBtn = document.getElementById('filterRevisedSumsBtn');
+      if (filterRevisedSumsBtn) {
+        filterRevisedSumsBtn.onclick = () => {
+          state.weekendRevisionFilter = 'revised';
+          saveState();
+          renderWeekendRevision();
+        };
+      }
+
+      const markAllRevisedBtn = document.getElementById('markAllRevisedBtn');
+      if (markAllRevisedBtn) {
+        markAllRevisedBtn.onclick = () => {
+          const problems = getWeeklyProblemsForSelectedWeek();
+          if (problems.length === 0) {
+            alert('No problems to mark as revised in this week.');
+            return;
+          }
+          if (!state.weekendRevisedSums) state.weekendRevisedSums = {};
+          problems.forEach(p => {
+            state.weekendRevisedSums[p.key] = true;
+            state.weekendRevisedSums[p.title] = true;
+          });
+          saveState();
+          renderWeekendRevision();
         };
       }
 
@@ -5849,6 +6358,7 @@
             state = { ...state, ...JSON.parse(ev.target.result) };
             saveState();
             populateDaySelect();
+            populateWeekSelect();
             updateUI();
             renderProblemList();
             setupGitHub();
@@ -5866,7 +6376,12 @@
           document.querySelectorAll('.tab-item').forEach(b => b.classList.remove('active'));
           document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
           btn.classList.add('active');
-          document.getElementById(btn.getAttribute('data-tab')).classList.add('active');
+          const targetTabId = btn.getAttribute('data-tab');
+          const targetTab = document.getElementById(targetTabId);
+          if (targetTab) targetTab.classList.add('active');
+          if (targetTabId === 'weekendRevisionTab') {
+            renderWeekendRevision();
+          }
         };
       });
     }
@@ -5878,10 +6393,12 @@
       loadState();
       populateStriverComponents();
       populateDaySelect();
+      populateWeekSelect();
       setupGitHub();
       setupActions();
       updateUI();
       renderProblemList();
+      renderWeekendRevision();
     });
   </script>
 </body>
