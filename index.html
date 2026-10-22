@@ -7,6 +7,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Markdown & Mermaid Libraries for Rich Notebook Features -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
   <style>
     :root {
       --bg: #f8fafc;
@@ -725,6 +728,387 @@
       resize: vertical;
     }
 
+    /* =====================================================================
+       NOTEBOOK EDITOR STYLING (MARKDOWN, TOOLBAR, MERMAID, LIVE PREVIEW)
+       ===================================================================== */
+    .notebook-container {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--card);
+      overflow: hidden;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .notebook-container:focus-within {
+      border-color: var(--text);
+      box-shadow: 0 0 0 1px var(--text);
+    }
+
+    .notebook-mode-group {
+      display: inline-flex;
+      background: #f1f5f9;
+      padding: 2px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      gap: 2px;
+    }
+
+    .notebook-mode-btn {
+      background: transparent;
+      border: none;
+      padding: 3px 9px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s ease;
+    }
+
+    .notebook-mode-btn:hover {
+      color: var(--text);
+    }
+
+    .notebook-mode-btn.active {
+      background: var(--card);
+      color: var(--text);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    }
+
+    .notebook-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 10px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .nb-toolbar-left, .nb-toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .nb-btn-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .nb-divider {
+      width: 1px;
+      height: 18px;
+      background: var(--border);
+      margin: 0 4px;
+    }
+
+    .nb-tool-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 7px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      line-height: 1.2;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .nb-tool-btn:hover {
+      background: #e2e8f0;
+      border-color: var(--border-hover);
+    }
+
+    .nb-tool-btn.active {
+      background: #cbd5e1;
+    }
+
+    .nb-mermaid-btn {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #16a34a;
+    }
+
+    .nb-mermaid-btn:hover {
+      background: #dcfce7;
+      border-color: #86efac;
+    }
+
+    /* Mermaid Dropdown */
+    .nb-dropdown {
+      position: relative;
+    }
+
+    .nb-dropdown-menu {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      display: none;
+      flex-direction: column;
+      z-index: 100;
+      min-width: 260px;
+      padding: 4px;
+    }
+
+    .nb-dropdown-menu.show {
+      display: flex;
+    }
+
+    .nb-dropdown-item {
+      background: transparent;
+      border: none;
+      text-align: left;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      transition: background 0.15s ease;
+      font-family: inherit;
+    }
+
+    .nb-dropdown-item:hover {
+      background: #f1f5f9;
+    }
+
+    .nb-item-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .nb-item-desc {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    /* Editor and Preview Layout */
+    .notebook-views-wrapper {
+      display: flex;
+      min-height: 240px;
+      position: relative;
+      background: var(--card);
+    }
+
+    .notebook-editor-pane, .notebook-preview-pane {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .notebook-textarea {
+      width: 100%;
+      height: 100%;
+      min-height: 240px;
+      border: none;
+      padding: 12px 14px;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--text);
+      background: transparent;
+      resize: vertical;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    .notebook-preview-pane {
+      background: #ffffff;
+      padding: 14px 18px;
+      overflow-y: auto;
+      max-height: 520px;
+    }
+
+    /* Modes: Write, Preview, Split */
+    .notebook-views-wrapper.mode-write .notebook-editor-pane {
+      display: flex;
+      width: 100%;
+    }
+    .notebook-views-wrapper.mode-write .notebook-preview-pane {
+      display: none;
+    }
+
+    .notebook-views-wrapper.mode-preview .notebook-editor-pane {
+      display: none;
+    }
+    .notebook-views-wrapper.mode-preview .notebook-preview-pane {
+      display: flex;
+      width: 100%;
+    }
+
+    .notebook-views-wrapper.mode-split .notebook-editor-pane {
+      display: flex;
+      border-right: 1px solid var(--border);
+    }
+    .notebook-views-wrapper.mode-split .notebook-preview-pane {
+      display: flex;
+    }
+
+    /* Rendered Notebook Content Typography */
+    .notebook-rendered-content {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.65;
+    }
+
+    .notebook-rendered-content h1,
+    .notebook-rendered-content h2,
+    .notebook-rendered-content h3,
+    .notebook-rendered-content h4 {
+      color: var(--text);
+      font-weight: 700;
+      margin-top: 14px;
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+
+    .notebook-rendered-content h1 { font-size: 18px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+    .notebook-rendered-content h2 { font-size: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 3px; }
+    .notebook-rendered-content h3 { font-size: 13px; }
+
+    .notebook-rendered-content p {
+      margin-bottom: 10px;
+    }
+
+    .notebook-rendered-content strong {
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .notebook-rendered-content em {
+      font-style: italic;
+    }
+
+    .notebook-rendered-content ul, 
+    .notebook-rendered-content ol {
+      margin-left: 20px;
+      margin-bottom: 10px;
+    }
+
+    .notebook-rendered-content li {
+      margin-bottom: 3px;
+    }
+
+    .notebook-rendered-content code {
+      font-family: var(--mono);
+      font-size: 11px;
+      background: #f1f5f9;
+      padding: 1px 5px;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .notebook-rendered-content pre {
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 10px 14px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin-bottom: 12px;
+    }
+
+    .notebook-rendered-content pre code {
+      background: transparent;
+      padding: 0;
+      border: none;
+      color: inherit;
+      font-size: 12px;
+    }
+
+    .notebook-rendered-content blockquote {
+      border-left: 3px solid var(--accent);
+      padding: 6px 12px;
+      margin: 8px 0;
+      background: #f8fafc;
+      color: var(--text-muted);
+      border-radius: 0 4px 4px 0;
+    }
+
+    .notebook-rendered-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0 14px 0;
+      font-size: 12px;
+    }
+
+    .notebook-rendered-content th,
+    .notebook-rendered-content td {
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      text-align: left;
+    }
+
+    .notebook-rendered-content th {
+      background: #f1f5f9;
+      font-weight: 600;
+    }
+
+    .notebook-rendered-content tr:nth-child(even) {
+      background: #f8fafc;
+    }
+
+    .notebook-rendered-content .mermaid {
+      background: #ffffff;
+      padding: 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      margin: 12px 0;
+      text-align: center;
+      overflow-x: auto;
+    }
+
+    .notebook-rendered-content .mermaid svg {
+      max-width: 100%;
+      height: auto;
+      margin: 0 auto;
+    }
+
+    .notebook-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 12px;
+      background: #f8fafc;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .notebook-footer-info {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .notebook-footer-help kbd {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 1px 4px;
+      font-family: var(--mono);
+      font-size: 10px;
+    }
+
     .problem-list {
       display: flex;
       flex-direction: column;
@@ -1259,9 +1643,122 @@
           <input type="text" class="form-input" id="probCommitMsgInput" placeholder="solve: 2 Sum Problem [Arrays - Medium]">
         </div>
 
-        <div class="form-group">
-          <label>Description / Solution Notes / Paper Logic</label>
-          <textarea class="form-textarea" id="probNotesInput" placeholder="Write the problem statement, variables traced on paper, algorithmic concept, and code notes..."></textarea>
+        <div class="form-group" style="display:flex; flex-direction:column; gap:6px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <label style="display:flex; align-items:center; gap:6px;">
+              <span>Notebook Notes &amp; Paper Logic</span>
+              <span class="energy-badge" style="font-size:10px; padding:1px 6px;">Markdown + Mermaid</span>
+            </label>
+            <div class="notebook-mode-group">
+              <button type="button" class="notebook-mode-btn active" id="nbModeWriteBtn" title="Editor mode">✏️ Write</button>
+              <button type="button" class="notebook-mode-btn" id="nbModeSplitBtn" title="Split view (editor + live render)">🔀 Split</button>
+              <button type="button" class="notebook-mode-btn" id="nbModePreviewBtn" title="Full rendered notebook view">👁️ Preview</button>
+            </div>
+          </div>
+
+          <!-- Notebook Container -->
+          <div class="notebook-container" id="notebookContainer">
+            <!-- Notebook Toolbar -->
+            <div class="notebook-toolbar">
+              <div class="nb-toolbar-left">
+                <!-- Text Styling -->
+                <div class="nb-btn-group">
+                  <button type="button" class="nb-tool-btn" id="nbBoldBtn" title="Bold (Ctrl+B)"><strong>B</strong></button>
+                  <button type="button" class="nb-tool-btn" id="nbItalicBtn" title="Italic (Ctrl+I)"><em>I</em></button>
+                  <button type="button" class="nb-tool-btn" id="nbStrikeBtn" title="Strikethrough"><s>S</s></button>
+                </div>
+
+                <div class="nb-divider"></div>
+
+                <!-- Headings -->
+                <div class="nb-btn-group">
+                  <button type="button" class="nb-tool-btn" id="nbH1Btn" title="Heading 1">H1</button>
+                  <button type="button" class="nb-tool-btn" id="nbH2Btn" title="Heading 2">H2</button>
+                  <button type="button" class="nb-tool-btn" id="nbH3Btn" title="Heading 3">H3</button>
+                </div>
+
+                <div class="nb-divider"></div>
+
+                <!-- Code & Math -->
+                <div class="nb-btn-group">
+                  <button type="button" class="nb-tool-btn" id="nbInlineCodeBtn" title="Inline Code (`code`)">&lt;&gt;</button>
+                  <button type="button" class="nb-tool-btn" id="nbCodeBlockBtn" title="C++ Code Block">```{ }```</button>
+                  <button type="button" class="nb-tool-btn" id="nbMathBtn" title="LaTeX Math Formula">$f(n)$</button>
+                </div>
+
+                <div class="nb-divider"></div>
+
+                <!-- Lists & Tables -->
+                <div class="nb-btn-group">
+                  <button type="button" class="nb-tool-btn" id="nbBulletListBtn" title="Bullet List">• List</button>
+                  <button type="button" class="nb-tool-btn" id="nbNumberedListBtn" title="Numbered List">1. List</button>
+                  <button type="button" class="nb-tool-btn" id="nbChecklistBtn" title="Task List">[✓] Task</button>
+                  <button type="button" class="nb-tool-btn" id="nbQuoteBtn" title="Quote / Callout">“ Quote</button>
+                  <button type="button" class="nb-tool-btn" id="nbTableBtn" title="Variable Trace Table">▦ Table</button>
+                </div>
+
+                <div class="nb-divider"></div>
+
+                <!-- Mermaid Diagrams Dropdown -->
+                <div class="nb-dropdown">
+                  <button type="button" class="nb-tool-btn nb-mermaid-btn" id="nbMermaidMenuBtn" title="Insert Mermaid Diagrams">
+                    <svg viewBox="0 0 24 24" width="13" height="13" style="fill:currentColor;"><path d="M4 4h4v4H4V4zm6 2h4v2h-4V6zm6-2h4v4h-4V4zM6 10h2v4H6v-4zm10 0h2v4h-2v-4zm-8 6h4v2H8v-2zm6-2h4v4h-4v-4z"/></svg>
+                    <span>Mermaid ▾</span>
+                  </button>
+                  <div class="nb-dropdown-menu" id="nbMermaidDropdown">
+                    <button type="button" class="nb-dropdown-item" id="nbMermaidFlowchartBtn">
+                      <span class="nb-item-title">📊 Flowchart (Logic Trace)</span>
+                      <span class="nb-item-desc">flowchart TD with decisions &amp; branches</span>
+                    </button>
+                    <button type="button" class="nb-dropdown-item" id="nbMermaidSequenceBtn">
+                      <span class="nb-item-title">🔄 Sequence (Two-Pointer / Call Trace)</span>
+                      <span class="nb-item-desc">sequenceDiagram with actors &amp; messages</span>
+                    </button>
+                    <button type="button" class="nb-dropdown-item" id="nbMermaidStateBtn">
+                      <span class="nb-item-title">🔀 State Machine / Recursion</span>
+                      <span class="nb-item-desc">stateDiagram-v2 for base case / recursion</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Template & Actions on Right -->
+              <div class="nb-toolbar-right">
+                <button type="button" class="nb-tool-btn" id="nbInsertTemplateBtn" title="Insert complete LeetCode notebook template (Intuition, Logic Flowchart, Complexity, Code)">
+                  <span>📋 Insert DSA Template</span>
+                </button>
+                <button type="button" class="nb-tool-btn" id="nbClearBtn" title="Clear notebook notes" style="color:#ef4444;">
+                  <span>✕ Clear</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Editor & Live Preview Body -->
+            <div class="notebook-views-wrapper mode-write" id="notebookViewsWrapper">
+              <!-- Write Area -->
+              <div class="notebook-editor-pane" id="notebookEditorPane">
+                <textarea class="notebook-textarea" id="probNotesInput" placeholder="Write notebook notes here... Supports **bold**, *italic*, tables, LaTeX math, code blocks, and ```mermaid diagrams."></textarea>
+              </div>
+
+              <!-- Live Preview Pane -->
+              <div class="notebook-preview-pane" id="notebookPreviewPane">
+                <div class="notebook-rendered-content" id="notebookRenderedContent"></div>
+              </div>
+            </div>
+
+            <!-- Notebook Status Footer -->
+            <div class="notebook-footer">
+              <div class="notebook-footer-info">
+                <span id="nbWordCount">0 words</span>
+                <span>•</span>
+                <span id="nbCharCount">0 characters</span>
+                <span id="nbMermaidCountBadge" style="display:none; color:#16a34a; font-weight:600;">• 0 diagrams</span>
+              </div>
+              <div class="notebook-footer-help">
+                <kbd>Ctrl+B</kbd> Bold &nbsp;•&nbsp; <kbd>Ctrl+I</kbd> Italic &nbsp;•&nbsp; <kbd>Tab</kbd> Indent &nbsp;•&nbsp; <code>```mermaid</code>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div style="display:flex; gap:10px; align-items:center;">
@@ -5442,6 +5939,12 @@
         ? `solve: LC #${lcNum} - ${sumTitle} [${subtopicTitle}]`
         : `solve: ${sumTitle} [${subtopicTitle}]`;
 
+      const notesEl = document.getElementById('probNotesInput');
+      if (notesEl && !notesEl.value.trim()) {
+        notesEl.value = `## 🧠 Intuition & Core Approach\nLogic and key observations for **${displayTitle}**.\n\n## 📊 Algorithmic Logic (Mermaid Flowchart)\n\`\`\`mermaid\nflowchart TD\n    Start([Start]) --> Init[Initialize Variables]\n    Init --> Check{Loop Condition}\n    Check -- Yes --> Step[Transition Logic]\n    Step --> Check\n    Check -- No --> Return([Return Result])\n\`\`\`\n\n## ⏱️ Complexity\n- **Time Complexity:** $O()$\n- **Space Complexity:** $O()$\n`;
+        notesEl.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+
       window.scrollTo({ top: 300, behavior: 'smooth' });
     }
 
@@ -5694,9 +6197,9 @@
                 ${isRevised ? `<span style="color:#16a34a; font-weight:600;">✓ Revised for Weekend</span>` : `<span style="color:#f59e0b; font-weight:600;">Pending Revision</span>`}
               </div>
               ${p.notes ? `
-                <details style="margin-top:4px;">
-                  <summary style="font-size:11px; color:var(--accent); cursor:pointer; font-weight:500;">View Paper Logic / Solution Notes</summary>
-                  <div class="prob-desc" style="margin-top:4px;">${escapeHtml(p.notes)}</div>
+                <details style="margin-top:6px;" class="rev-notes-details">
+                  <summary style="font-size:11px; color:var(--accent); cursor:pointer; font-weight:600;">📖 View Paper Logic / Solution Notes &amp; Diagrams</summary>
+                  <div class="notebook-rendered-content rev-rendered-notes" style="margin-top:6px; padding:10px 14px; background:var(--card); border:1px solid var(--border); border-radius:6px;"></div>
                 </details>
               ` : ''}
             </div>
@@ -5708,6 +6211,17 @@
               : `<button class="btn btn-sm" title="Push problem to my_coding repository" onclick="loadProblemIntoGitHubForm('${escapeHtml(p.title)}', '${escapeHtml(p.subtopic)}', ${p.id || 'null'})">Commit ➔</button>`}
           </div>
         `;
+
+        const revDetailsEl = item.querySelector('.rev-notes-details');
+        if (revDetailsEl) {
+          const revNotesContentEl = revDetailsEl.querySelector('.rev-rendered-notes');
+          revDetailsEl.ontoggle = () => {
+            if (revDetailsEl.open && !revNotesContentEl.hasAttribute('data-rendered')) {
+              revNotesContentEl.setAttribute('data-rendered', 'true');
+              renderMarkdownWithMermaid(p.notes, revNotesContentEl);
+            }
+          };
+        }
 
         const cb = item.querySelector('.checkbox');
         cb.onchange = () => {
@@ -5942,6 +6456,8 @@
 
       document.getElementById('commitGhBtn').onclick = () => recordProblem(true);
       document.getElementById('saveLocalProbBtn').onclick = () => recordProblem(false);
+
+      setupNotebookEditor();
     }
 
     function updateGhBadge() {
@@ -5949,6 +6465,372 @@
       const r = document.getElementById('ghRepo').value.trim() || 'my_coding';
       document.getElementById('ghTargetPreview').innerText = `${u}/${r}`;
       document.getElementById('repoHeaderBadge').innerText = `github.com/${u}/${r}`;
+    }
+
+    /* =====================================================================
+       NOTEBOOK ENGINE: MARKDOWN, TOOLBAR, MERMAID & LIVE PREVIEW
+       ===================================================================== */
+    function initMermaid() {
+      if (typeof mermaid !== 'undefined') {
+        try {
+          mermaid.initialize({
+            startOnLoad: false,
+            theme: 'default',
+            securityLevel: 'loose',
+            fontFamily: 'Inter, sans-serif'
+          });
+        } catch (e) {
+          console.warn('Mermaid init notice:', e);
+        }
+      }
+    }
+
+    function fallbackMarkdownParser(text) {
+      if (!text) return '';
+      let out = escapeHtml(text);
+
+      const codeBlocks = [];
+      out = out.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, (match, lang, code) => {
+        const placeholder = `@@@CODEBLOCK_${codeBlocks.length}@@@`;
+        codeBlocks.push({ lang, code });
+        return placeholder;
+      });
+
+      out = out.replace(/^### (.*$)/gim, '<h3 style="font-size:14px; font-weight:700; margin:10px 0 4px;">$1</h3>');
+      out = out.replace(/^## (.*$)/gim, '<h2 style="font-size:15px; font-weight:700; margin:12px 0 6px; border-bottom:1px solid #f1f5f9; padding-bottom:3px;">$1</h2>');
+      out = out.replace(/^# (.*$)/gim, '<h1 style="font-size:18px; font-weight:700; margin:14px 0 8px; border-bottom:1px solid var(--border); padding-bottom:4px;">$1</h1>');
+
+      out = out.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>');
+      out = out.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      out = out.replace(/__(.*?)__/g, '<strong>$1</strong>');
+      out = out.replace(/\*(.*?)\*/g, '<em>$1</em>');
+      out = out.replace(/_(.*?)_/g, '<em>$1</em>');
+      out = out.replace(/~~(.*?)~~/g, '<del>$1</del>');
+
+      out = out.replace(/`([^`]+)`/g, '<code style="background:#f1f5f9; padding:1px 5px; border-radius:3px; font-family:var(--mono); font-size:11px;">$1</code>');
+      out = out.replace(/^\> (.*$)/gim, '<blockquote style="border-left:3px solid var(--accent); padding:6px 12px; color:var(--text-muted); background:#f8fafc; margin:6px 0;">$1</blockquote>');
+      out = out.replace(/\n/g, '<br>');
+
+      codeBlocks.forEach((cb, idx) => {
+        const placeholder = `@@@CODEBLOCK_${idx}@@@`;
+        if (cb.lang === 'mermaid') {
+          out = out.replace(placeholder, `<div class="mermaid">${cb.code.trim()}</div>`);
+        } else {
+          out = out.replace(placeholder, `<pre style="background:#0f172a; color:#f8fafc; padding:10px 14px; border-radius:6px; overflow-x:auto; font-family:var(--mono); font-size:12px;"><code class="language-${cb.lang}">${cb.code.trim()}</code></pre>`);
+        }
+      });
+
+      return out;
+    }
+
+    async function renderMarkdownWithMermaid(markdownText, targetElement) {
+      if (!markdownText || !markdownText.trim()) {
+        targetElement.innerHTML = '<div style="color:var(--text-muted); font-size:12px; font-style:italic; padding:12px;">No notes written yet. Switch to Write mode to compose notebook notes, code, or mermaid diagrams.</div>';
+        return;
+      }
+
+      let html = '';
+      if (typeof marked !== 'undefined' && marked.parse) {
+        try {
+          html = marked.parse(markdownText, { gfm: true, breaks: true });
+        } catch (e) {
+          html = fallbackMarkdownParser(markdownText);
+        }
+      } else {
+        html = fallbackMarkdownParser(markdownText);
+      }
+
+      targetElement.innerHTML = html;
+
+      // Transform code.language-mermaid to div.mermaid
+      const codeBlocks = targetElement.querySelectorAll('pre code.language-mermaid, pre code.mermaid');
+      codeBlocks.forEach(codeEl => {
+        const pre = codeEl.closest('pre');
+        const div = document.createElement('div');
+        div.className = 'mermaid';
+        div.textContent = codeEl.textContent.trim();
+        if (pre) pre.replaceWith(div);
+      });
+
+      // Render mermaid diagrams
+      if (typeof mermaid !== 'undefined') {
+        try {
+          const nodes = targetElement.querySelectorAll('.mermaid');
+          if (nodes.length > 0) {
+            await mermaid.run({ nodes: Array.from(nodes) });
+          }
+        } catch (err) {
+          console.warn('Mermaid rendering notice:', err);
+        }
+      }
+    }
+
+    function setupNotebookEditor() {
+      const textarea = document.getElementById('probNotesInput');
+      const previewEl = document.getElementById('notebookRenderedContent');
+      const wrapper = document.getElementById('notebookViewsWrapper');
+      if (!textarea || !previewEl || !wrapper) return;
+
+      initMermaid();
+
+      let currentMode = 'write';
+      let renderTimeout = null;
+
+      function updateStatsAndPreview() {
+        const val = textarea.value || '';
+        const words = val.trim() ? val.trim().split(/\s+/).length : 0;
+        const chars = val.length;
+        const mermaidMatches = (val.match(/```mermaid/g) || []).length;
+
+        const wordCountEl = document.getElementById('nbWordCount');
+        if (wordCountEl) wordCountEl.innerText = `${words} word${words === 1 ? '' : 's'}`;
+
+        const charCountEl = document.getElementById('nbCharCount');
+        if (charCountEl) charCountEl.innerText = `${chars} character${chars === 1 ? '' : 's'}`;
+
+        const badgeEl = document.getElementById('nbMermaidCountBadge');
+        if (badgeEl) {
+          if (mermaidMatches > 0) {
+            badgeEl.style.display = 'inline';
+            badgeEl.innerText = `• ${mermaidMatches} Mermaid diagram${mermaidMatches === 1 ? '' : 's'}`;
+          } else {
+            badgeEl.style.display = 'none';
+          }
+        }
+
+        if (currentMode === 'split' || currentMode === 'preview') {
+          clearTimeout(renderTimeout);
+          renderTimeout = setTimeout(() => {
+            renderMarkdownWithMermaid(val, previewEl);
+          }, 250);
+        }
+      }
+
+      function setMode(mode) {
+        currentMode = mode;
+        wrapper.className = `notebook-views-wrapper mode-${mode}`;
+
+        ['nbModeWriteBtn', 'nbModeSplitBtn', 'nbModePreviewBtn'].forEach(id => {
+          const btn = document.getElementById(id);
+          if (btn) btn.classList.remove('active');
+        });
+
+        if (mode === 'write') {
+          const btn = document.getElementById('nbModeWriteBtn');
+          if (btn) btn.classList.add('active');
+          textarea.focus();
+        } else if (mode === 'split') {
+          const btn = document.getElementById('nbModeSplitBtn');
+          if (btn) btn.classList.add('active');
+          renderMarkdownWithMermaid(textarea.value, previewEl);
+        } else if (mode === 'preview') {
+          const btn = document.getElementById('nbModePreviewBtn');
+          if (btn) btn.classList.add('active');
+          renderMarkdownWithMermaid(textarea.value, previewEl);
+        }
+      }
+
+      // Mode switch buttons
+      const writeBtn = document.getElementById('nbModeWriteBtn');
+      if (writeBtn) writeBtn.onclick = () => setMode('write');
+
+      const splitBtn = document.getElementById('nbModeSplitBtn');
+      if (splitBtn) splitBtn.onclick = () => setMode('split');
+
+      const previewBtn = document.getElementById('nbModePreviewBtn');
+      if (previewBtn) previewBtn.onclick = () => setMode('preview');
+
+      // Selection formatting helper
+      function wrapSelection(prefix, suffix, defaultText = 'text') {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const sel = textarea.value.substring(start, end);
+        const textToInsert = sel || defaultText;
+        const replacement = prefix + textToInsert + suffix;
+        textarea.focus();
+
+        if (document.execCommand) {
+          textarea.setRangeText(replacement, start, end, 'select');
+        } else {
+          textarea.value = textarea.value.substring(0, start) + replacement + textarea.value.substring(end);
+        }
+
+        if (!sel) {
+          textarea.selectionStart = start + prefix.length;
+          textarea.selectionEnd = start + prefix.length + defaultText.length;
+        } else {
+          textarea.selectionStart = start + prefix.length;
+          textarea.selectionEnd = start + prefix.length + sel.length;
+        }
+        updateStatsAndPreview();
+      }
+
+      // Line prefixing helper (headings, lists, quotes)
+      function prefixLines(prefix) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const val = textarea.value;
+        const lineStart = val.lastIndexOf('\n', start - 1) + 1;
+        const lineEnd = val.indexOf('\n', end);
+        const actualEnd = lineEnd === -1 ? val.length : lineEnd;
+
+        const lines = val.substring(lineStart, actualEnd).split('\n');
+        const modified = lines.map(l => l.startsWith(prefix) ? l.substring(prefix.length) : prefix + l).join('\n');
+
+        textarea.focus();
+        textarea.setRangeText(modified, lineStart, actualEnd, 'select');
+        updateStatsAndPreview();
+      }
+
+      // Snippet insertion helper
+      function insertSnippet(snippet) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const val = textarea.value;
+        const needsNewlineBefore = start > 0 && val[start - 1] !== '\n';
+        const needsNewlineAfter = end < val.length && val[end] !== '\n';
+        const fullSnippet = (needsNewlineBefore ? '\n\n' : '') + snippet + (needsNewlineAfter ? '\n\n' : '\n');
+
+        textarea.focus();
+        textarea.setRangeText(fullSnippet, start, end, 'end');
+        updateStatsAndPreview();
+      }
+
+      // Toolbar Buttons
+      const boldBtn = document.getElementById('nbBoldBtn');
+      if (boldBtn) boldBtn.onclick = () => wrapSelection('**', '**', 'bold text');
+
+      const italicBtn = document.getElementById('nbItalicBtn');
+      if (italicBtn) italicBtn.onclick = () => wrapSelection('*', '*', 'italic text');
+
+      const strikeBtn = document.getElementById('nbStrikeBtn');
+      if (strikeBtn) strikeBtn.onclick = () => wrapSelection('~~', '~~', 'strikethrough text');
+
+      const h1Btn = document.getElementById('nbH1Btn');
+      if (h1Btn) h1Btn.onclick = () => prefixLines('# ');
+
+      const h2Btn = document.getElementById('nbH2Btn');
+      if (h2Btn) h2Btn.onclick = () => prefixLines('## ');
+
+      const h3Btn = document.getElementById('nbH3Btn');
+      if (h3Btn) h3Btn.onclick = () => prefixLines('### ');
+
+      const inlineCodeBtn = document.getElementById('nbInlineCodeBtn');
+      if (inlineCodeBtn) inlineCodeBtn.onclick = () => wrapSelection('`', '`', 'code');
+
+      const codeBlockBtn = document.getElementById('nbCodeBlockBtn');
+      if (codeBlockBtn) {
+        codeBlockBtn.onclick = () => {
+          insertSnippet('```cpp\n// Optimal C++ Solution\nclass Solution {\npublic:\n    void solve() {\n        \n    }\n};\n```');
+        };
+      }
+
+      const mathBtn = document.getElementById('nbMathBtn');
+      if (mathBtn) mathBtn.onclick = () => wrapSelection('$', '$', 'O(N)');
+
+      const bulletListBtn = document.getElementById('nbBulletListBtn');
+      if (bulletListBtn) bulletListBtn.onclick = () => prefixLines('- ');
+
+      const numberedListBtn = document.getElementById('nbNumberedListBtn');
+      if (numberedListBtn) numberedListBtn.onclick = () => prefixLines('1. ');
+
+      const checklistBtn = document.getElementById('nbChecklistBtn');
+      if (checklistBtn) checklistBtn.onclick = () => prefixLines('- [ ] ');
+
+      const quoteBtn = document.getElementById('nbQuoteBtn');
+      if (quoteBtn) quoteBtn.onclick = () => prefixLines('> ');
+
+      const tableBtn = document.getElementById('nbTableBtn');
+      if (tableBtn) {
+        tableBtn.onclick = () => {
+          insertSnippet('| Step | Variable | Current Value | Condition |\n| :--- | :--- | :--- | :--- |\n| 1 | `low` | `0` | `low <= high` |\n| 2 | `high` | `n - 1` | Verified |\n| 3 | `ans` | `-1` | Processing |');
+        };
+      }
+
+      // Mermaid Dropdown Menu
+      const mermaidMenuBtn = document.getElementById('nbMermaidMenuBtn');
+      const mermaidDropdown = document.getElementById('nbMermaidDropdown');
+      if (mermaidMenuBtn && mermaidDropdown) {
+        mermaidMenuBtn.onclick = (e) => {
+          e.stopPropagation();
+          mermaidDropdown.classList.toggle('show');
+        };
+        document.addEventListener('click', () => {
+          mermaidDropdown.classList.remove('show');
+        });
+      }
+
+      // Mermaid Diagrams
+      const mermaidFlowchartBtn = document.getElementById('nbMermaidFlowchartBtn');
+      if (mermaidFlowchartBtn) {
+        mermaidFlowchartBtn.onclick = () => {
+          insertSnippet('```mermaid\nflowchart TD\n    Start([Start: Array & Target]) --> Init[Init: left = 0, right = n - 1]\n    Init --> Loop{left <= right?}\n    Loop -- Yes --> Mid[mid = left + (right - left) / 2]\n    Mid --> Check{arr[mid] == target?}\n    Check -- Yes --> Found([Return mid: Found!])\n    Check -- No --> Comp{arr[mid] < target?}\n    Comp -- Yes --> MoveRight[left = mid + 1]\n    Comp -- No --> MoveLeft[right = mid - 1]\n    MoveRight --> Loop\n    MoveLeft --> Loop\n    Loop -- No --> NotFound([Return -1: Target Not Found])\n```');
+        };
+      }
+
+      const mermaidSequenceBtn = document.getElementById('nbMermaidSequenceBtn');
+      if (mermaidSequenceBtn) {
+        mermaidSequenceBtn.onclick = () => {
+          insertSnippet('```mermaid\nsequenceDiagram\n    autonumber\n    actor Dev as Algorithm\n    participant L as Pointer Left\n    participant R as Pointer Right\n    participant A as Vector Nums\n    Dev->>L: Init at index 0\n    Dev->>R: Init at index n - 1\n    loop While left < right\n        L->>A: Read nums[left]\n        R->>A: Read nums[right]\n        alt Sum == target\n            Dev-->>Dev: Pair found! Return indices\n        else Sum < target\n            Dev->>L: Increment left++\n        else Sum > target\n            Dev->>R: Decrement right--\n        end\n    end\n```');
+        };
+      }
+
+      const mermaidStateBtn = document.getElementById('nbMermaidStateBtn');
+      if (mermaidStateBtn) {
+        mermaidStateBtn.onclick = () => {
+          insertSnippet('```mermaid\nstateDiagram-v2\n    [*] --> CheckBaseCase\n    CheckBaseCase --> BaseCaseReturn: n <= 1\n    CheckBaseCase --> DivideSubproblem: n > 1\n    DivideSubproblem --> RecursiveCall1: solve(left)\n    DivideSubproblem --> RecursiveCall2: solve(right)\n    RecursiveCall1 --> MergeStep\n    RecursiveCall2 --> MergeStep\n    MergeStep --> [*]: Return Merged Result\n```');
+        };
+      }
+
+      // Complete DSA Notebook Template
+      const insertTemplateBtn = document.getElementById('nbInsertTemplateBtn');
+      if (insertTemplateBtn) {
+        insertTemplateBtn.onclick = () => {
+          insertSnippet('## 🧠 Intuition & Core Idea\nExplain the core logic, pattern identification (e.g. Two Pointers, Monotonic Stack, Sliding Window, DP), and why this approach is optimal.\n\n## 📊 Algorithmic Logic (Mermaid Flowchart)\n```mermaid\nflowchart TD\n    Start([Start]) --> Init[Initialize Data Structures]\n    Init --> Check{Loop Condition}\n    Check -- Yes --> Step[Execute Transition Logic]\n    Step --> Check\n    Check -- No --> Return([Return Optimal Solution])\n```\n\n## 📝 Variable Trace / Invariants\n| Step | Variables | Invariant Checked | Decision |\n| :--- | :--- | :--- | :--- |\n| 1 | `i = 0`, `curr = 0` | `curr < limit` | Expand window |\n| 2 | `i = 1`, `curr = 5` | `curr >= limit` | Contract left |\n\n## 💻 C++ Implementation Notes\n```cpp\n// Optimal C++ Logic\nclass Solution {\npublic:\n    int solveProblem(vector<int>& nums) {\n        // Implementation here\n        return 0;\n    }\n};\n```\n\n## ⏱️ Complexity Analysis\n- **Time Complexity:** $O(N)$\n- **Space Complexity:** $O(1)$\n');
+        };
+      }
+
+      // Clear Notes
+      const clearBtn = document.getElementById('nbClearBtn');
+      if (clearBtn) {
+        clearBtn.onclick = () => {
+          if (!textarea.value.trim() || confirm('Clear the notebook text area?')) {
+            textarea.value = '';
+            updateStatsAndPreview();
+          }
+        };
+      }
+
+      // Keyboard Shortcuts (Ctrl+B, Ctrl+I, Ctrl+K, Tab Indent)
+      textarea.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          const start = textarea.selectionStart;
+          const end = textarea.selectionEnd;
+          if (e.shiftKey) {
+            const val = textarea.value;
+            const lineStart = val.lastIndexOf('\n', start - 1) + 1;
+            if (val.substring(lineStart, lineStart + 2) === '  ') {
+              textarea.setRangeText('', lineStart, lineStart + 2, 'end');
+            }
+          } else {
+            textarea.setRangeText('  ', start, end, 'end');
+          }
+          updateStatsAndPreview();
+        } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+          e.preventDefault();
+          wrapSelection('**', '**', 'bold text');
+        } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'i') {
+          e.preventDefault();
+          wrapSelection('*', '*', 'italic text');
+        } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+          e.preventDefault();
+          wrapSelection('`', '`', 'code');
+        }
+      });
+
+      textarea.addEventListener('input', updateStatsAndPreview);
+      updateStatsAndPreview();
     }
 
     async function recordProblem(pushToGithub) {
@@ -6105,7 +6987,11 @@
       document.getElementById('probTitleInput').value = '';
       document.getElementById('probFileInput').value = '';
       document.getElementById('probCommitMsgInput').value = '';
-      document.getElementById('probNotesInput').value = '';
+      const notesEl = document.getElementById('probNotesInput');
+      if (notesEl) {
+        notesEl.value = '';
+        notesEl.dispatchEvent(new Event('input', { bubbles: true }));
+      }
 
       updateUI();
       renderProblemList();
@@ -6145,11 +7031,14 @@
       state.problems.forEach(p => {
         const item = document.createElement('div');
         item.className = 'problem-item';
+        const hasNotes = !!(p.notes && p.notes.trim());
+        const hasMermaid = hasNotes && p.notes.includes('```mermaid');
         item.innerHTML = `
           <div class="prob-header">
             <div>
               <span class="prob-name">${escapeHtml(p.title)}</span>
               <span style="font-size:11px; color:var(--text-muted); margin-left:6px;">(${escapeHtml(p.topic)} • Day ${p.day})</span>
+              ${hasMermaid ? `<span class="energy-badge" style="font-size:10px; margin-left:6px; background:#f0fdf4; color:#16a34a; border-color:#bbf7d0;">Mermaid Diagram</span>` : ''}
             </div>
             <div style="display:flex; gap:8px; align-items:center;">
               ${p.githubUrl ? `<a href="${p.githubUrl}" target="_blank" class="github-link">View in my_coding ↗</a>` : `<span style="font-size:11px; color:var(--text-muted);">Local</span>`}
@@ -6157,8 +7046,25 @@
             </div>
           </div>
           <div style="font-size:11px; color:var(--text-muted); font-family:var(--mono);">File: ${escapeHtml(p.fileName)} | Commit: "${escapeHtml(p.commitMsg || p.title)}"</div>
-          ${p.notes ? `<div class="prob-desc">${escapeHtml(p.notes)}</div>` : ''}
+          ${hasNotes ? `
+            <details style="margin-top:6px;" class="prob-notes-details">
+              <summary style="font-size:11px; color:var(--accent); cursor:pointer; font-weight:600;">📖 View Notebook Notes &amp; Diagrams</summary>
+              <div class="notebook-rendered-content prob-rendered-notes" style="margin-top:6px; padding:10px 14px; background:var(--card); border:1px solid var(--border); border-radius:6px;"></div>
+            </details>
+          ` : ''}
         `;
+
+        const detailsEl = item.querySelector('.prob-notes-details');
+        if (detailsEl) {
+          const notesContentEl = detailsEl.querySelector('.prob-rendered-notes');
+          detailsEl.ontoggle = () => {
+            if (detailsEl.open && !notesContentEl.hasAttribute('data-rendered')) {
+              notesContentEl.setAttribute('data-rendered', 'true');
+              renderMarkdownWithMermaid(p.notes, notesContentEl);
+            }
+          };
+        }
+
         container.appendChild(item);
       });
     }
@@ -6381,6 +7287,12 @@
           if (targetTab) targetTab.classList.add('active');
           if (targetTabId === 'weekendRevisionTab') {
             renderWeekendRevision();
+          } else if (targetTabId === 'githubTab') {
+            const previewEl = document.getElementById('notebookRenderedContent');
+            const textarea = document.getElementById('probNotesInput');
+            if (previewEl && textarea) {
+              renderMarkdownWithMermaid(textarea.value, previewEl);
+            }
           }
         };
       });
@@ -6390,6 +7302,7 @@
        INITIALIZE
        ===================================================================== */
     window.addEventListener('DOMContentLoaded', () => {
+      initMermaid();
       loadState();
       populateStriverComponents();
       populateDaySelect();
