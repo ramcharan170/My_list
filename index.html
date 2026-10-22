@@ -6833,6 +6833,73 @@
       updateStatsAndPreview();
     }
 
+    /**
+     * Formats notebook notes for GitHub README / Markdown files so that soft newlines
+     * are automatically preserved as visible line breaks on GitHub, while protecting
+     * fenced code blocks (Mermaid, C++, Python), tables, headings, and lists from corruption.
+     */
+    function formatNotesForReadme(notes) {
+      if (!notes) return '';
+
+      const lines = notes.split('\n');
+      let inCodeBlock = false;
+      const result = [];
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const trimmed = line.trim();
+
+        // Check for fenced code block delimiters (``` or ~~~)
+        if (trimmed.startsWith('```') || trimmed.startsWith('~~~')) {
+          inCodeBlock = !inCodeBlock;
+          result.push(line);
+          continue;
+        }
+
+        // Inside code block (Mermaid, C++, etc.): preserve exact code without trailing spaces
+        if (inCodeBlock) {
+          result.push(line);
+          continue;
+        }
+
+        // Empty line: preserve clean paragraph separator
+        if (!trimmed) {
+          result.push('');
+          continue;
+        }
+
+        // Markdown block elements that manage their own line breaks:
+        // - Headings (#, ##, ###, etc.)
+        // - Horizontal dividers (---, ***, ___)
+        // - Markdown tables (| ... |)
+        // - List items (- item, * item, + item, 1. item)
+        if (
+          trimmed.startsWith('#') ||
+          trimmed.startsWith('---') ||
+          trimmed.startsWith('***') ||
+          trimmed.startsWith('___') ||
+          (trimmed.startsWith('|') && trimmed.endsWith('|')) ||
+          trimmed.startsWith('- ') ||
+          trimmed.startsWith('* ') ||
+          trimmed.startsWith('+ ') ||
+          /^\d+[\.\)]\s/.test(trimmed)
+        ) {
+          result.push(line);
+          continue;
+        }
+
+        // Normal paragraph text line:
+        // GitHub CommonMark requires 2 trailing spaces or <br> to render a soft break as a newline.
+        if (line.endsWith('  ') || line.endsWith('<br>') || line.endsWith('<br/>') || line.endsWith('<br />')) {
+          result.push(line);
+        } else {
+          result.push(line + '  ');
+        }
+      }
+
+      return result.join('\n');
+    }
+
     async function recordProblem(pushToGithub) {
       const title = document.getElementById('probTitleInput').value.trim();
       let fileName = document.getElementById('probFileInput').value.trim();
@@ -6863,7 +6930,8 @@
       }
 
       const curDate = getDateForDay(state.selectedDay);
-      const fileContent = `# ${title}\n\n- **Striver's A2Z Topic:** ${topic}\n- **Date:** ${formatDateFormatted(curDate)}\n- **Blueprint Day:** Day ${state.selectedDay}\n\n## Description & Notes\n\n${notes}\n`;
+      const formattedNotes = formatNotesForReadme(notes);
+      const fileContent = `# ${title}\n\n- **Striver's A2Z Topic:** ${topic}\n- **Date:** ${formatDateFormatted(curDate)}\n- **Blueprint Day:** Day ${state.selectedDay}\n\n## Description & Notes\n\n${formattedNotes}\n`;
 
       let ghUrl = null;
       let commitSucceeded = false;
@@ -6976,7 +7044,8 @@
         fileName,
         topic,
         commitMsg,
-        notes,
+        notes: formattedNotes || notes,
+        rawNotes: notes,
         githubUrl: ghUrl
       };
 
