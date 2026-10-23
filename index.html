@@ -928,6 +928,9 @@
       resize: vertical;
       outline: none;
       box-sizing: border-box;
+      tab-size: 4;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
     .notebook-preview-pane {
@@ -1023,6 +1026,8 @@
       border-radius: 6px;
       overflow-x: auto;
       margin-bottom: 12px;
+      white-space: pre;
+      tab-size: 4;
     }
 
     .notebook-rendered-content pre code {
@@ -1031,6 +1036,9 @@
       border: none;
       color: inherit;
       font-size: 12px;
+      white-space: pre;
+      font-family: var(--mono);
+      tab-size: 4;
     }
 
     .notebook-rendered-content blockquote {
@@ -1761,11 +1769,13 @@
           </div>
         </div>
 
-        <div style="display:flex; gap:10px; align-items:center;">
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
           <button class="btn btn-primary" id="commitGhBtn">
             <span>Commit to my_coding</span>
           </button>
           <button class="btn" id="saveLocalProbBtn">Save Locally Only</button>
+          <button class="btn" id="downloadMdBtn" title="Download .md file with exact spaces and indentation preserved">📥 Download .md</button>
+          <button class="btn" id="copyMdBtn" title="Copy markdown to clipboard with exact spaces preserved">📋 Copy Markdown</button>
         </div>
 
         <div id="statusBanner"></div>
@@ -5941,7 +5951,7 @@
 
       const notesEl = document.getElementById('probNotesInput');
       if (notesEl && !notesEl.value.trim()) {
-        notesEl.value = `## 🧠 Intuition & Core Approach\nLogic and key observations for **${displayTitle}**.\n\n## 📊 Algorithmic Logic (Mermaid Flowchart)\n\`\`\`mermaid\nflowchart TD\n    Start([Start]) --> Init[Initialize Variables]\n    Init --> Check{Loop Condition}\n    Check -- Yes --> Step[Transition Logic]\n    Step --> Check\n    Check -- No --> Return([Return Result])\n\`\`\`\n\n## ⏱️ Complexity\n- **Time Complexity:** $O()$\n- **Space Complexity:** $O()$\n`;
+        notesEl.value = `## 🧠 Intuition & Core Approach\nLogic and key observations for **${displayTitle}**.\n\n## 📊 Algorithmic Logic (Mermaid Flowchart)\n\`\`\`mermaid\nflowchart TD\n    Start([Start]) --> Init[Initialize Variables]\n    Init --> Check{Loop Condition}\n    Check -- Yes --> Step[Transition Logic]\n    Step --> Check\n    Check -- No --> Return([Return Result])\n\`\`\`\n\n## 💻 C++ Solution Code\n\`\`\`cpp\n// Optimal Solution\nclass Solution {\npublic:\n    void solve() {\n        \n    }\n};\n\`\`\`\n\n## ⏱️ Complexity\n- **Time Complexity:** $O()$\n- **Space Complexity:** $O()$\n`;
         notesEl.dispatchEvent(new Event('input', { bubbles: true }));
       }
 
@@ -6456,6 +6466,10 @@
 
       document.getElementById('commitGhBtn').onclick = () => recordProblem(true);
       document.getElementById('saveLocalProbBtn').onclick = () => recordProblem(false);
+      const dlMdBtn = document.getElementById('downloadMdBtn');
+      if (dlMdBtn) dlMdBtn.onclick = () => downloadCurrentMd();
+      const cpMdBtn = document.getElementById('copyMdBtn');
+      if (cpMdBtn) cpMdBtn.onclick = () => copyCurrentMd();
 
       setupNotebookEditor();
     }
@@ -6516,7 +6530,8 @@
         if (cb.lang === 'mermaid') {
           out = out.replace(placeholder, `<div class="mermaid">${cb.code.trim()}</div>`);
         } else {
-          out = out.replace(placeholder, `<pre style="background:#0f172a; color:#f8fafc; padding:10px 14px; border-radius:6px; overflow-x:auto; font-family:var(--mono); font-size:12px;"><code class="language-${cb.lang}">${cb.code.trim()}</code></pre>`);
+          const rawCode = cb.code.replace(/^\n+|\n+$/g, '');
+          out = out.replace(placeholder, `<pre style="background:#0f172a; color:#f8fafc; padding:10px 14px; border-radius:6px; overflow-x:auto; font-family:var(--mono); font-size:12px; white-space:pre; tab-size:4;"><code class="language-${cb.lang}" style="white-space:pre; font-family:var(--mono); tab-size:4;">${rawCode}</code></pre>`);
         }
       });
 
@@ -6529,15 +6544,19 @@
         return;
       }
 
+      // Pre-format markdown so that un-fenced code blocks, indentation, and newlines
+      // render identically in live preview as they will in the .md file and on GitHub!
+      const preparedMarkdown = formatNotesForReadme(markdownText);
+
       let html = '';
       if (typeof marked !== 'undefined' && marked.parse) {
         try {
-          html = marked.parse(markdownText, { gfm: true, breaks: true });
+          html = marked.parse(preparedMarkdown, { gfm: true, breaks: true });
         } catch (e) {
-          html = fallbackMarkdownParser(markdownText);
+          html = fallbackMarkdownParser(preparedMarkdown);
         }
       } else {
-        html = fallbackMarkdownParser(markdownText);
+        html = fallbackMarkdownParser(preparedMarkdown);
       }
 
       targetElement.innerHTML = html;
@@ -6716,12 +6735,30 @@
       if (h3Btn) h3Btn.onclick = () => prefixLines('### ');
 
       const inlineCodeBtn = document.getElementById('nbInlineCodeBtn');
-      if (inlineCodeBtn) inlineCodeBtn.onclick = () => wrapSelection('`', '`', 'code');
+      if (inlineCodeBtn) {
+        inlineCodeBtn.onclick = () => {
+          const start = textarea.selectionStart;
+          const end = textarea.selectionEnd;
+          const sel = textarea.value.substring(start, end);
+          if (sel.includes('\n')) {
+            wrapSelection('```cpp\n', '\n```', 'code');
+          } else {
+            wrapSelection('`', '`', 'code');
+          }
+        };
+      }
 
       const codeBlockBtn = document.getElementById('nbCodeBlockBtn');
       if (codeBlockBtn) {
         codeBlockBtn.onclick = () => {
-          insertSnippet('```cpp\n// Optimal C++ Solution\nclass Solution {\npublic:\n    void solve() {\n        \n    }\n};\n```');
+          const start = textarea.selectionStart;
+          const end = textarea.selectionEnd;
+          const sel = textarea.value.substring(start, end);
+          if (sel) {
+            wrapSelection('```cpp\n', '\n```', 'code');
+          } else {
+            insertSnippet('```cpp\n// Optimal C++ Solution\nclass Solution {\npublic:\n    void solve() {\n        \n    }\n};\n```');
+          }
         };
       }
 
@@ -6801,22 +6838,57 @@
         };
       }
 
-      // Keyboard Shortcuts (Ctrl+B, Ctrl+I, Ctrl+K, Tab Indent)
+      // Keyboard Shortcuts (Ctrl+B, Ctrl+I, Ctrl+K, Tab Indent, Enter Auto-Indent)
       textarea.addEventListener('keydown', (e) => {
         if (e.key === 'Tab') {
           e.preventDefault();
           const start = textarea.selectionStart;
           const end = textarea.selectionEnd;
-          if (e.shiftKey) {
-            const val = textarea.value;
-            const lineStart = val.lastIndexOf('\n', start - 1) + 1;
-            if (val.substring(lineStart, lineStart + 2) === '  ') {
-              textarea.setRangeText('', lineStart, lineStart + 2, 'end');
+          const val = textarea.value;
+
+          if (start === end) {
+            if (e.shiftKey) {
+              const lineStart = val.lastIndexOf('\n', start - 1) + 1;
+              const linePrefix = val.substring(lineStart, lineStart + 4);
+              const match = linePrefix.match(/^ {1,4}/);
+              if (match) {
+                textarea.setRangeText('', lineStart, lineStart + match[0].length, 'end');
+              }
+            } else {
+              textarea.setRangeText('    ', start, end, 'end');
             }
           } else {
-            textarea.setRangeText('  ', start, end, 'end');
+            const lineStart = val.lastIndexOf('\n', start - 1) + 1;
+            const lineEnd = val.indexOf('\n', end);
+            const actualEnd = lineEnd === -1 ? val.length : lineEnd;
+            const selectedText = val.substring(lineStart, actualEnd);
+            const lines = selectedText.split('\n');
+
+            let modified;
+            if (e.shiftKey) {
+              modified = lines.map(l => l.replace(/^ {1,4}/, '')).join('\n');
+            } else {
+              modified = lines.map(l => '    ' + l).join('\n');
+            }
+
+            textarea.setRangeText(modified, lineStart, actualEnd, 'select');
           }
           updateStatsAndPreview();
+        } else if (e.key === 'Enter') {
+          // Smart Auto-Indent on Enter: preserve previous line's spaces/indentation
+          const start = textarea.selectionStart;
+          const val = textarea.value;
+          const lineStart = val.lastIndexOf('\n', start - 1) + 1;
+          const currentLine = val.substring(lineStart, start);
+          const indentMatch = currentLine.match(/^(\s+)/);
+          const extraIndent = currentLine.trim().endsWith('{') ? '    ' : '';
+          const indent = (indentMatch ? indentMatch[1] : '') + extraIndent;
+
+          if (indent) {
+            e.preventDefault();
+            textarea.setRangeText('\n' + indent, start, start, 'end');
+            updateStatsAndPreview();
+          }
         } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
           e.preventDefault();
           wrapSelection('**', '**', 'bold text');
@@ -6825,7 +6897,14 @@
           wrapSelection('*', '*', 'italic text');
         } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
           e.preventDefault();
-          wrapSelection('`', '`', 'code');
+          const start = textarea.selectionStart;
+          const end = textarea.selectionEnd;
+          const sel = textarea.value.substring(start, end);
+          if (sel.includes('\n')) {
+            wrapSelection('```cpp\n', '\n```', 'code');
+          } else {
+            wrapSelection('`', '`', 'code');
+          }
         }
       });
 
@@ -6834,70 +6913,336 @@
     }
 
     /**
-     * Formats notebook notes for GitHub README / Markdown files so that soft newlines
-     * are automatically preserved as visible line breaks on GitHub, while protecting
-     * fenced code blocks (Mermaid, C++, Python), tables, headings, and lists from corruption.
+     * Formats notebook notes for GitHub README / Markdown files so that:
+     * 1. Soft newlines and exact indents are 100% preserved.
+     * 2. Any code blocks (whether written with ```, single backticks, or typed directly without backticks)
+     *    are formatted with exact indentation, spaces, and line breaks without compression.
+     * 3. Markdown elements (headings, tables, lists, quotes, mermaid) are cleanly maintained.
      */
     function formatNotesForReadme(notes) {
       if (!notes) return '';
 
-      const lines = notes.split('\n');
-      let inCodeBlock = false;
-      const result = [];
+      // 1. Normalize line endings
+      let text = notes.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
+      // 2. Fix isolated single-backtick multiline code spans (which CommonMark flattens to a single line)
+      // before segmenting into fenced blocks
+      const singleMultilinePat = /(^|[^`])`([^`\n][\s\S]*?\n[\s\S]*?[^`\n])`([^`]|$)/g;
+      text = text.replace(singleMultilinePat, '$1\n```cpp\n$2\n```\n$3');
+
+      const rawLines = text.split('\n');
+
+      // 3. Separate into immutable fenced blocks vs editable text segments
+      const segments = [];
+      let inFenced = false;
+      let currentLines = [];
+
+      for (let i = 0; i < rawLines.length; i++) {
+        const line = rawLines[i];
         const trimmed = line.trim();
 
-        // Check for fenced code block delimiters (``` or ~~~)
         if (trimmed.startsWith('```') || trimmed.startsWith('~~~')) {
-          inCodeBlock = !inCodeBlock;
-          result.push(line);
+          if (!inFenced) {
+            if (currentLines.length > 0) {
+              segments.push({ isFenced: false, lines: currentLines });
+              currentLines = [];
+            }
+            currentLines.push(line);
+            inFenced = true;
+          } else {
+            currentLines.push(line);
+            segments.push({ isFenced: true, lines: currentLines });
+            currentLines = [];
+            inFenced = false;
+          }
           continue;
         }
 
-        // Inside code block (Mermaid, C++, etc.): preserve exact code without trailing spaces
-        if (inCodeBlock) {
-          result.push(line);
-          continue;
-        }
+        currentLines.push(line);
+      }
 
-        // Empty line: preserve clean paragraph separator
-        if (!trimmed) {
-          result.push('');
-          continue;
-        }
+      if (currentLines.length > 0) {
+        segments.push({ isFenced: inFenced, lines: currentLines });
+      }
 
-        // Markdown block elements that manage their own line breaks:
-        // - Headings (#, ##, ###, etc.)
-        // - Horizontal dividers (---, ***, ___)
-        // - Markdown tables (| ... |)
-        // - List items (- item, * item, + item, 1. item)
+      // Helper to identify if a line is code
+      function isCodeLine(line) {
+        const trimmed = line.trim();
+        if (!trimmed) return false;
+
+        // Ignore markdown block syntax
         if (
           trimmed.startsWith('#') ||
           trimmed.startsWith('---') ||
           trimmed.startsWith('***') ||
           trimmed.startsWith('___') ||
           (trimmed.startsWith('|') && trimmed.endsWith('|')) ||
-          trimmed.startsWith('- ') ||
-          trimmed.startsWith('* ') ||
-          trimmed.startsWith('+ ') ||
-          /^\d+[\.\)]\s/.test(trimmed)
+          trimmed.startsWith('> ') ||
+          /^\s*[-*+]\s+/.test(line) ||
+          /^\s*\d+[\.\)]\s+/.test(line)
         ) {
-          result.push(line);
+          return false;
+        }
+
+        // Common documentation / explanation labels are NOT code
+        if (/^\s*(Step\s*\d+|Example\s*\d+|Note|Explanation|Observation|Approach|Algorithm|Complexity|Intuition|Input|Output)[:\s]/i.test(trimmed)) {
+          return false;
+        }
+
+        const codePatterns = [
+          /\b(class|struct|enum|union|namespace)\s+\w+/,
+          /\b(public|private|protected)\s*:/,
+          /\b(int|void|bool|float|double|char|long|short|auto|const)\s+[\w\*&]+/,
+          /\b(vector|map|set|unordered_map|unordered_set|queue|stack|pair|list|deque|priority_queue)\s*<.*>/,
+          /\b(string|size_t|uint64_t|int64_t|nullptr|NULL)\b/,
+          /\b(def|self\.|import\s+\w+|from\s+\w+\s+import)\b/,
+          /\b(function|console\.log|let\s+\w+|const\s+\w+|var\s+\w+)\b/,
+          /\b(System\.out\.println|public\s+static\s+void)\b/,
+          /\b(return\s+|return;)/,
+          /\b(for\s*\(|while\s*\(|if\s*\(|else\s+if\s*\(|else\s*\{|switch\s*\(|catch\s*\()/,
+          /\b(cout\s*<<|cin\s*>>|std::|#include\b|#define\b|using\s+namespace\b)/,
+          /[;{}]$/,
+          /^\s*((\/\/|\/\*|\*\/|\*)\s*.*)?$/,
+          /^\s*[{}\(\)\[\];]\s*$/,
+          /\w+\[[^\]]*\]\s*(=|\+=|-=|\*=|\/=|==|!=)/,
+          /\w+\s*=\s*[^;]+;/,
+          /\w+\s*->\s*\w+/,
+          /\w+\.\w+\(/
+        ];
+
+        for (const pat of codePatterns) {
+          if (pat.test(trimmed)) return true;
+        }
+
+        if (/^(\t|\s{2,})/.test(line) && /[;{}=\(\)]/.test(trimmed)) {
+          if (!/^[A-Z][a-z]+(\s+[a-z]+){3,}/.test(trimmed)) {
+            return true;
+          }
+        }
+
+        return false;
+      }
+
+      function detectCodeLang(lines) {
+        const text = lines.join('\n');
+        if (/\b(def\s+\w+|import\s+\w+|from\s+\w+\s+import|self\.)\b/.test(text)) return 'python';
+        if (/\b(System\.out\.println|public\s+class|ArrayList|HashMap)\b/.test(text)) return 'java';
+        if (/\b(function\s+\w+|console\.log|const\s+\w+\s*=|let\s+\w+\s*=)\b/.test(text)) return 'javascript';
+        if (/\b(SELECT|INSERT|UPDATE|DELETE|FROM|WHERE|JOIN)\b/i.test(text) && lines.length <= 15) return 'sql';
+        return 'cpp';
+      }
+
+      const finalResultLines = [];
+
+      for (const segment of segments) {
+        if (segment.isFenced) {
+          finalResultLines.push(...segment.lines);
           continue;
         }
 
-        // Normal paragraph text line:
-        // GitHub CommonMark requires 2 trailing spaces or <br> to render a soft break as a newline.
-        if (line.endsWith('  ') || line.endsWith('<br>') || line.endsWith('<br/>') || line.endsWith('<br />')) {
-          result.push(line);
-        } else {
-          result.push(line + '  ');
+        const lines = segment.lines;
+        let i = 0;
+
+        while (i < lines.length) {
+          const line = lines[i];
+          const trimmed = line.trim();
+
+          const isCodeLabel = /^(#*\s*)?(Code|Solution|C\+\+|Java|Python|Implementation|Algorithm|C\+\+\s+Solution|Optimal\s+Solution|Brute\s+Force\s+Solution)[:\s]*$/i.test(trimmed);
+
+          let codeBlockCandidate = false;
+          let startIdx = i;
+
+          if (isCodeLabel && i + 1 < lines.length && (isCodeLine(lines[i + 1]) || lines[i + 1].trim().startsWith('{') || /^(\t|\s{2,})/.test(lines[i + 1]))) {
+            finalResultLines.push(line.endsWith('  ') ? line : line + '  ');
+            i++;
+            startIdx = i;
+            codeBlockCandidate = true;
+          } else if (isCodeLine(line)) {
+            codeBlockCandidate = true;
+          }
+
+          if (codeBlockCandidate) {
+            const codeLines = [];
+            let j = startIdx;
+            let emptyCount = 0;
+
+            while (j < lines.length) {
+              const curLine = lines[j];
+              const curTrimmed = curLine.trim();
+
+              if (!curTrimmed) {
+                emptyCount++;
+                if (emptyCount >= 2) break;
+                codeLines.push(curLine);
+                j++;
+                continue;
+              }
+
+              emptyCount = 0;
+
+              if (curTrimmed.startsWith('#') || curTrimmed.startsWith('---') || (curTrimmed.startsWith('|') && curTrimmed.endsWith('|'))) {
+                break;
+              }
+
+              if (isCodeLine(curLine) || (/^(\t|\s{2,})/.test(curLine) && !/^\s*[-*+]\s+/.test(curLine))) {
+                codeLines.push(curLine);
+                j++;
+              } else if (/^[}\)]+;?$/.test(curTrimmed)) {
+                codeLines.push(curLine);
+                j++;
+              } else {
+                break;
+              }
+            }
+
+            while (codeLines.length > 0 && !codeLines[codeLines.length - 1].trim()) {
+              codeLines.pop();
+            }
+
+            const isSolidSingleLine = codeLines.length === 1 && (/[;{}]$/.test(codeLines[0].trim()) || /\b(return|class|int|void)\b/.test(codeLines[0].trim()));
+            if (codeLines.length >= 2 || isSolidSingleLine) {
+              const lang = detectCodeLang(codeLines);
+              finalResultLines.push('```' + lang);
+              finalResultLines.push(...codeLines);
+              finalResultLines.push('```');
+              i = j;
+              continue;
+            }
+          }
+
+          if (!trimmed) {
+            finalResultLines.push('');
+            i++;
+            continue;
+          }
+
+          if (
+            trimmed.startsWith('#') ||
+            trimmed.startsWith('---') ||
+            trimmed.startsWith('***') ||
+            trimmed.startsWith('___') ||
+            (trimmed.startsWith('|') && trimmed.endsWith('|')) ||
+            trimmed.startsWith('> ') ||
+            /^\s*[-*+]\s+/.test(line) ||
+            /^\s*\d+[\.\)]\s+/.test(line)
+          ) {
+            finalResultLines.push(line);
+            i++;
+            continue;
+          }
+
+          let processedLine = line;
+          const leadingMatch = line.match(/^(\s+)(.*)$/);
+          if (leadingMatch) {
+            const indentSpaces = leadingMatch[1];
+            const rest = leadingMatch[2];
+            const nbspIndent = indentSpaces.replace(/  /g, '&nbsp;&nbsp;').replace(/ /g, '&nbsp;').replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+            processedLine = nbspIndent + rest;
+          }
+
+          processedLine = processedLine.replace(/  /g, ' &nbsp;');
+
+          if (processedLine.endsWith('<br>') || processedLine.endsWith('<br/>') || processedLine.endsWith('<br />')) {
+            finalResultLines.push(processedLine);
+          } else {
+            finalResultLines.push(processedLine + '<br>');
+          }
+
+          i++;
         }
       }
 
-      return result.join('\n');
+      return finalResultLines.join('\n');
+    }
+
+    function utf8ToBase64(str) {
+      try {
+        const bytes = new TextEncoder().encode(str);
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        return btoa(binary);
+      } catch (e) {
+        return btoa(unescape(encodeURIComponent(str)));
+      }
+    }
+
+    function generateProblemMd(p) {
+      const curDate = getDateForDay(p.day);
+      const formattedNotes = formatNotesForReadme(p.rawNotes || p.notes);
+      return `# ${p.title}\n\n- **Striver's A2Z Topic:** ${p.topic}\n- **Date:** ${p.dateStr || formatDateFormatted(curDate)}\n- **Blueprint Day:** Day ${p.day}\n\n## Description & Notes\n\n${formattedNotes}\n`;
+    }
+
+    function downloadProblemMd(id) {
+      const p = state.problems.find(x => x.id === id);
+      if (!p) return;
+      const content = generateProblemMd(p);
+      const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = p.fileName || `${p.title.toLowerCase().replace(/[^a-z0-9]+/g, '_')}.md`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    async function copyProblemMd(id) {
+      const p = state.problems.find(x => x.id === id);
+      if (!p) return;
+      const content = generateProblemMd(p);
+      try {
+        await navigator.clipboard.writeText(content);
+        showStatus('📋 Markdown copied to clipboard with exact spaces and indents!', 'green');
+      } catch (e) {
+        prompt('Copy markdown below:', content);
+      }
+    }
+
+    function downloadCurrentMd() {
+      const title = document.getElementById('probTitleInput').value.trim() || 'Problem';
+      let fileName = document.getElementById('probFileInput').value.trim();
+      const topic = document.getElementById('probTopicInput').value;
+      const notes = document.getElementById('probNotesInput').value.trim();
+
+      if (!fileName) {
+        let numPrefix = '';
+        let cleanTitle = title;
+        const numMatch = title.match(/^#?(\d+)\s*[-:.)]?\s*(.*)$/);
+        if (numMatch) {
+          numPrefix = `${numMatch[1].padStart(4, '0')}_`;
+          cleanTitle = numMatch[2] || title;
+        }
+        const sanitized = cleanTitle.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+        fileName = `${numPrefix}${sanitized}.md`;
+      }
+
+      const curDate = getDateForDay(state.selectedDay);
+      const formattedNotes = formatNotesForReadme(notes);
+      const fileContent = `# ${title}\n\n- **Striver's A2Z Topic:** ${topic}\n- **Date:** ${formatDateFormatted(curDate)}\n- **Blueprint Day:** Day ${state.selectedDay}\n\n## Description & Notes\n\n${formattedNotes}\n`;
+
+      const blob = new Blob([fileContent], { type: 'text/markdown;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      showStatus(`📥 Downloaded ${fileName} with exact spaces & indents preserved!`, 'green');
+    }
+
+    async function copyCurrentMd() {
+      const title = document.getElementById('probTitleInput').value.trim() || 'Problem';
+      const topic = document.getElementById('probTopicInput').value;
+      const notes = document.getElementById('probNotesInput').value.trim();
+      const curDate = getDateForDay(state.selectedDay);
+      const formattedNotes = formatNotesForReadme(notes);
+      const fileContent = `# ${title}\n\n- **Striver's A2Z Topic:** ${topic}\n- **Date:** ${formatDateFormatted(curDate)}\n- **Blueprint Day:** Day ${state.selectedDay}\n\n## Description & Notes\n\n${formattedNotes}\n`;
+
+      try {
+        await navigator.clipboard.writeText(fileContent);
+        showStatus('📋 Markdown copied to clipboard with exact spaces and indents!', 'green');
+      } catch (e) {
+        prompt('Copy markdown below:', fileContent);
+      }
     }
 
     async function recordProblem(pushToGithub) {
@@ -6963,7 +7308,7 @@
             }
           } catch (e) {}
 
-          const base64Content = btoa(unescape(encodeURIComponent(fileContent)));
+          const base64Content = utf8ToBase64(fileContent);
           const payload = {
             message: commitMsg,
             content: base64Content,
@@ -7109,8 +7454,10 @@
               <span style="font-size:11px; color:var(--text-muted); margin-left:6px;">(${escapeHtml(p.topic)} • Day ${p.day})</span>
               ${hasMermaid ? `<span class="energy-badge" style="font-size:10px; margin-left:6px; background:#f0fdf4; color:#16a34a; border-color:#bbf7d0;">Mermaid Diagram</span>` : ''}
             </div>
-            <div style="display:flex; gap:8px; align-items:center;">
+            <div style="display:flex; gap:6px; align-items:center;">
               ${p.githubUrl ? `<a href="${p.githubUrl}" target="_blank" class="github-link">View in my_coding ↗</a>` : `<span style="font-size:11px; color:var(--text-muted);">Local</span>`}
+              <button class="btn btn-sm" style="padding:1px 6px; font-size:11px;" onclick="downloadProblemMd('${p.id}')" title="Download .md file with exact spaces">📥 .md</button>
+              <button class="btn btn-sm" style="padding:1px 6px; font-size:11px;" onclick="copyProblemMd('${p.id}')" title="Copy markdown to clipboard">📋 Copy</button>
               <button class="btn btn-sm" style="padding:1px 5px; font-size:11px; color:#ef4444;" onclick="deleteProb('${p.id}')">✕</button>
             </div>
           </div>
